@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { APP_API_URL } from 'app/app.config';
 import { User } from 'app/core/user/user.types';
 import { map, Observable, ReplaySubject, tap } from 'rxjs';
 
@@ -7,6 +8,7 @@ import { map, Observable, ReplaySubject, tap } from 'rxjs';
 export class UserService {
     private _httpClient = inject(HttpClient);
     private _user: ReplaySubject<User> = new ReplaySubject<User>(1);
+    private readonly API_URL = inject(APP_API_URL);
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
@@ -34,7 +36,7 @@ export class UserService {
      * Get the current signed-in user data
      */
     get(): Observable<User> {
-        return this._httpClient.get<User>('api/common/user').pipe(
+        return this._httpClient.get<User>(`${this.API_URL}/users/me`).pipe(
             tap((user) => {
                 this._user.next(user);
             })
