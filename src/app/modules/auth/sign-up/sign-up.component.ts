@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewEncapsulation, inject } from '@angular/core';
 import {
     FormsModule,
     NgForm,
@@ -37,6 +37,10 @@ import { AuthService } from 'app/core/auth/auth.service';
     ],
 })
 export class AuthSignUpComponent implements OnInit {
+    private _authService = inject(AuthService);
+    private _formBuilder = inject(UntypedFormBuilder);
+    private _router = inject(Router);
+
     @ViewChild('signUpNgForm') signUpNgForm: NgForm;
 
     alert: { type: FuseAlertType; message: string } = {
@@ -45,15 +49,6 @@ export class AuthSignUpComponent implements OnInit {
     };
     signUpForm: UntypedFormGroup;
     showAlert: boolean = false;
-
-    /**
-     * Constructor
-     */
-    constructor(
-        private _authService: AuthService,
-        private _formBuilder: UntypedFormBuilder,
-        private _router: Router
-    ) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks

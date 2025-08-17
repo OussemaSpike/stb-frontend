@@ -1,0 +1,239 @@
+<div
+    class="flex min-w-0 flex-auto flex-col bg-gray-200 sm:absolute sm:inset-0 sm:overflow-hidden dark:bg-transparent"
+>
+    <!-- Header -->
+    <div
+        class="bg-card relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8"
+    >
+        <!-- Title -->
+        <div class="text-4xl font-extrabold tracking-tight">
+            Historique des Transferts
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center gap-3 sm:ml-4 sm:mt-0">
+            <!-- New Transfer button -->
+            <button
+                mat-flat-button
+                class="ml-2"
+                type="button"
+                [color]="'primary'"
+                routerLink="/client/transfers"
+            >
+                <mat-icon>add</mat-icon>
+                <span class="ml-2">Nouveau transfert</span>
+            </button>
+
+            <mat-form-field
+                class="fuse-mat-dense fuse-mat-rounded min-w-48 md:hidden"
+                [subscriptSizing]="'dynamic'"
+            >
+                <mat-icon
+                    class="icon-size-5"
+                    matPrefix
+                    [svgIcon]="'heroicons_solid:magnifying-glass'"
+                />
+                <input
+                    matInput
+                    class="truncate"
+                    title="rechercher"
+                    [formControl]="searchInputControl"
+                    [autocomplete]="'off'"
+                    [placeholder]="'Rechercher un bénéficiaire...'"
+                />
+            </mat-form-field>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div
+        class="bg-card border-b px-6 py-4 md:px-8"
+    >
+        <mat-expansion-panel>
+            <mat-expansion-panel-header>
+                <mat-panel-title>
+                    <mat-icon class="mr-2">filter_list</mat-icon>
+                    Filtres avancés
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <form [formGroup]="filterForm" class="mt-4">
+                <div
+                    class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+                >
+                    <!-- Status Filter -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Statut</mat-label>
+                        <mat-select formControlName="status">
+                            <mat-option value=""
+                                >Tous les statuts</mat-option
+                            >
+                            @for (
+                                status of statusOptions;
+                                track status.value
+                            ) {
+                                <mat-option [value]="status.value">{{
+                                    status.label
+                                }}</mat-option>
+                            }
+                        </mat-select>
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:funnel'"
+                        />
+                    </mat-form-field>
+
+                    <!-- Amount Range -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Montant minimum</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            formControlName="minAmount"
+                            placeholder="0.00"
+                        />
+                        <span matTextSuffix>TND</span>
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:currency-dollar'"
+                        />
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Montant maximum</mat-label>
+                        <input
+                            matInput
+                            type="number"
+                            formControlName="maxAmount"
+                            placeholder="0.00"
+                        />
+                        <span matTextSuffix>TND</span>
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:currency-dollar'"
+                        />
+                    </mat-form-field>
+
+                    <!-- Date Range -->
+                    <mat-form-field appearance="outline">
+                        <mat-label>Date de début</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="startPicker"
+                            formControlName="startDate"
+                        />
+                        <mat-datepicker-toggle
+                            matIconSuffix
+                            [for]="startPicker"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #startPicker></mat-datepicker>
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:calendar'"
+                        />
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Date de fin</mat-label>
+                        <input
+                            matInput
+                            [matDatepicker]="endPicker"
+                            formControlName="endDate"
+                        />
+                        <mat-datepicker-toggle
+                            matIconSuffix
+                            [for]="endPicker"
+                        ></mat-datepicker-toggle>
+                        <mat-datepicker #endPicker></mat-datepicker>
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:calendar'"
+                        />
+                    </mat-form-field>
+                </div>
+
+                <div class="mt-4 flex justify-end">
+                    <button
+                        mat-button
+                        (click)="clearFilters()"
+                        class="mr-2"
+                    >
+                        Effacer les filtres
+                    </button>
+                </div>
+            </form>
+        </mat-expansion-panel>
+    </div>
+
+    <!-- Main content -->
+    <div
+        class="flex justify-between bg-gray-200 p-10 sm:overflow-x-auto sm:overflow-y-auto dark:bg-transparent"
+    >
+        <div
+            class="max-w-8xl mx-auto flex w-full flex-auto flex-col rounded-lg sm:overflow-x-auto sm:overflow-y-auto"
+        >
+            <mtx-grid
+                [data]="transfers()"
+                [columns]="columns()"
+                [loading]="isLoading()"
+                [columnResizable]="false"
+                [rowStriped]="false"
+                [showToolbar]="true"
+                [pageOnFront]="false"
+                [length]="totalElements()"
+                [pageSizeOptions]="pageSizeOptions()"
+                [pageIndex]="currentPage()"
+                [pageSize]="pageSize()"
+                [toolbarTemplate]="toolbarTpl"
+                [columnMenuButtonText]="'Colonnes'"
+                [columnMenuButtonType]="'stroked'"
+                [columnMenuButtonColor]="'primary'"
+                [noResultText]="'Aucun transfert trouvé.'"
+                (page)="onPageEvent($event)"
+                (sortChange)="onSortChange($event)"
+            >
+                <ng-template #toolbarTpl>
+                    <div class="flex w-full items-center gap-2">
+                        <mat-form-field
+                            class="fuse-mat-dense hidden w-full bg-white md:block"
+                            [subscriptSizing]="'dynamic'"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                matPrefix
+                                [svgIcon]="'heroicons_solid:magnifying-glass'"
+                            />
+                            <input
+                                matInput
+                                class="truncate"
+                                title="rechercher"
+                                [formControl]="searchInputControl"
+                                [autocomplete]="'off'"
+                                [placeholder]="'Rechercher un bénéficiaire...'"
+                            />
+                        </mat-form-field>
+                    </div>
+                </ng-template>
+
+                <!-- Custom Status Cell Template -->
+                <ng-template matColumnDef="status" let-row let-value="value">
+                    <mat-chip-set>
+                        <mat-chip
+                            [class]="getStatusColor(row.status)"
+                        >
+                            <mat-icon matChipTrailingIcon>
+                                {{ getStatusIcon(row.status) }}
+                            </mat-icon>
+                            {{ getStatusText(row.status) }}
+                        </mat-chip>
+                    </mat-chip-set>
+                </ng-template>
+            </mtx-grid>
+        </div>
+    </div>
+</div>

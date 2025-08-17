@@ -1,8 +1,8 @@
-@if (!child) {
+@if (!child()) {
     <div
         [ngClass]="{
             'fuse-horizontal-navigation-menu-active': trigger.menuOpen,
-            'fuse-horizontal-navigation-menu-active-forced': item.active,
+            'fuse-horizontal-navigation-menu-active-forced': item().active,
         }"
         [matMenuTriggerFor]="matMenu"
         (onMenuOpen)="triggerChangeDetection()"
@@ -10,7 +10,7 @@
         #trigger="matMenuTrigger"
     >
         <ng-container
-            *ngTemplateOutlet="itemTemplate; context: { $implicit: item }"
+            *ngTemplateOutlet="itemTemplate; context: { $implicit: item() }"
         ></ng-container>
     </div>
 }
@@ -20,7 +20,7 @@
     [overlapTrigger]="false"
     #matMenu="matMenu"
 >
-    @for (item of item.children; track trackByFn($index, item)) {
+    @for (item of item().children; track trackByFn($index, item)) {
         <!-- Skip the hidden items -->
         @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
             <!-- Basic -->
@@ -32,7 +32,7 @@
                 >
                     <fuse-horizontal-navigation-basic-item
                         [item]="item"
-                        [name]="name"
+                        [name]="name()"
                     ></fuse-horizontal-navigation-basic-item>
                 </div>
             }
@@ -58,7 +58,7 @@
                     <fuse-horizontal-navigation-branch-item
                         [child]="true"
                         [item]="item"
-                        [name]="name"
+                        [name]="name()"
                         #branch
                     ></fuse-horizontal-navigation-branch-item>
                 </div>
@@ -69,7 +69,7 @@
                 <div class="fuse-horizontal-navigation-menu-item" mat-menu-item>
                     <fuse-horizontal-navigation-divider-item
                         [item]="item"
-                        [name]="name"
+                        [name]="name()"
                     ></fuse-horizontal-navigation-divider-item>
                 </div>
             }

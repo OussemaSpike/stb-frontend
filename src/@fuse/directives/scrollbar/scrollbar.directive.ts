@@ -1,14 +1,15 @@
 import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion';
 import { Platform } from '@angular/cdk/platform';
 import {
-    Directive,
-    ElementRef,
-    Input,
-    OnChanges,
-    OnDestroy,
-    OnInit,
-    SimpleChanges,
-    inject,
+  Directive,
+  ElementRef,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+  inject,
+  input
 } from '@angular/core';
 import {
     ScrollbarGeometry,
@@ -35,7 +36,7 @@ export class FuseScrollbarDirective implements OnChanges, OnInit, OnDestroy {
     private _platform = inject(Platform);
 
     @Input() fuseScrollbar: boolean = true;
-    @Input() fuseScrollbarOptions: PerfectScrollbar.Options;
+    readonly fuseScrollbarOptions = input<PerfectScrollbar.Options>(undefined);
 
     private _animation: number;
     private _options: PerfectScrollbar.Options;

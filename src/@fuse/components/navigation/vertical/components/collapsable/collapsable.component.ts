@@ -1,15 +1,16 @@
 import { BooleanInput } from '@angular/cdk/coercion';
 import { NgClass } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    HostBinding,
-    Input,
-    OnDestroy,
-    OnInit,
-    forwardRef,
-    inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  HostBinding,
+  Input,
+  OnDestroy,
+  OnInit,
+  forwardRef,
+  inject,
+  input
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -51,9 +52,9 @@ export class FuseVerticalNavigationCollapsableItemComponent
     private _router = inject(Router);
     private _fuseNavigationService = inject(FuseNavigationService);
 
-    @Input() autoCollapse: boolean;
+    readonly autoCollapse = input<boolean>(undefined);
     @Input() item: FuseNavigationItem;
-    @Input() name: string;
+    readonly name = input<string>(undefined);
 
     isCollapsed: boolean = true;
     isExpanded: boolean = false;
@@ -86,16 +87,17 @@ export class FuseVerticalNavigationCollapsableItemComponent
     ngOnInit(): void {
         // Get the parent navigation component
         this._fuseVerticalNavigationComponent =
-            this._fuseNavigationService.getComponent(this.name);
+            this._fuseNavigationService.getComponent(this.name());
 
         // If the item has a children that has a matching url with the current url, expand...
+        const autoCollapse = this.autoCollapse();
         if (this._hasActiveChild(this.item, this._router.url)) {
             this.expand();
         }
         // Otherwise...
         else {
             // If the autoCollapse is on, collapse...
-            if (this.autoCollapse) {
+            if (autoCollapse) {
                 this.collapse();
             }
         }
@@ -116,7 +118,7 @@ export class FuseVerticalNavigationCollapsableItemComponent
             });
 
         // Listen for the onCollapsableItemExpanded from the service if the autoCollapse is on
-        if (this.autoCollapse) {
+        if (autoCollapse) {
             this._fuseVerticalNavigationComponent.onCollapsableItemExpanded
                 .pipe(takeUntil(this._unsubscribeAll))
                 .subscribe((expandedItem) => {
@@ -162,7 +164,7 @@ export class FuseVerticalNavigationCollapsableItemComponent
                 // Otherwise...
                 else {
                     // If the autoCollapse is on, collapse...
-                    if (this.autoCollapse) {
+                    if (this.autoCollapse()) {
                         this.collapse();
                     }
                 }

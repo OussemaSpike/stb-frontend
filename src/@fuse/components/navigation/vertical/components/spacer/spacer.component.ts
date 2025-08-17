@@ -1,12 +1,12 @@
 import { NgClass } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    inject,
-    Input,
-    OnDestroy,
-    OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  input
 } from '@angular/core';
 import { FuseNavigationService } from '@fuse/components/navigation/navigation.service';
 import { FuseNavigationItem } from '@fuse/components/navigation/navigation.types';
@@ -25,8 +25,8 @@ export class FuseVerticalNavigationSpacerItemComponent
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _fuseNavigationService = inject(FuseNavigationService);
 
-    @Input() item: FuseNavigationItem;
-    @Input() name: string;
+    readonly item = input<FuseNavigationItem>(undefined);
+    readonly name = input<string>(undefined);
 
     private _fuseVerticalNavigationComponent: FuseVerticalNavigationComponent;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -41,7 +41,7 @@ export class FuseVerticalNavigationSpacerItemComponent
     ngOnInit(): void {
         // Get the parent navigation component
         this._fuseVerticalNavigationComponent =
-            this._fuseNavigationService.getComponent(this.name);
+            this._fuseNavigationService.getComponent(this.name());
 
         // Subscribe to onRefreshed on the navigation component
         this._fuseVerticalNavigationComponent.onRefreshed

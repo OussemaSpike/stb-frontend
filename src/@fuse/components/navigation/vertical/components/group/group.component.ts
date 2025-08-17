@@ -1,14 +1,15 @@
 import { BooleanInput } from '@angular/cdk/coercion';
 import { NgClass } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    Input,
-    OnDestroy,
-    OnInit,
-    forwardRef,
-    inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  forwardRef,
+  inject,
+  input
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { FuseNavigationService } from '@fuse/components/navigation/navigation.service';
@@ -44,9 +45,9 @@ export class FuseVerticalNavigationGroupItemComponent
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _fuseNavigationService = inject(FuseNavigationService);
 
-    @Input() autoCollapse: boolean;
+    readonly autoCollapse = input<boolean>(undefined);
     @Input() item: FuseNavigationItem;
-    @Input() name: string;
+    readonly name = input<string>(undefined);
 
     private _fuseVerticalNavigationComponent: FuseVerticalNavigationComponent;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -61,7 +62,7 @@ export class FuseVerticalNavigationGroupItemComponent
     ngOnInit(): void {
         // Get the parent navigation component
         this._fuseVerticalNavigationComponent =
-            this._fuseNavigationService.getComponent(this.name);
+            this._fuseNavigationService.getComponent(this.name());
 
         // Subscribe to onRefreshed on the navigation component
         this._fuseVerticalNavigationComponent.onRefreshed

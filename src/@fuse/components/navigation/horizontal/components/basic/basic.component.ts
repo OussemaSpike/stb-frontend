@@ -1,12 +1,13 @@
 import { NgClass, NgTemplateOutlet } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    Input,
-    OnDestroy,
-    OnInit,
-    inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  inject,
+  input
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -44,7 +45,7 @@ export class FuseHorizontalNavigationBasicItemComponent
     private _fuseUtilsService = inject(FuseUtilsService);
 
     @Input() item: FuseNavigationItem;
-    @Input() name: string;
+    readonly name = input<string>(undefined);
 
     // Set the equivalent of {exact: false} as default for active match options.
     // We are not assigning the item.isActiveMatchOptions directly to the
@@ -74,7 +75,7 @@ export class FuseHorizontalNavigationBasicItemComponent
 
         // Get the parent navigation component
         this._fuseHorizontalNavigationComponent =
-            this._fuseNavigationService.getComponent(this.name);
+            this._fuseNavigationService.getComponent(this.name());
 
         // Mark for check
         this._changeDetectorRef.markForCheck();

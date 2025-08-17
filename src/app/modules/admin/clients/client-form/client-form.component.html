@@ -1,0 +1,232 @@
+<main class="barcode-container -m-6 flex min-w-80 flex-col sm:min-w-160">
+    <header
+        class="flex h-16 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5 rtl:flex-row-reverse dark:bg-primary-600"
+    >
+        <div class="flex flex-col">
+            <h1 class="text-2xl font-medium">
+                {{
+                    updateMode()
+                        ? 'Modifier le client'
+                        : 'Ajouter un nouveau client'
+                }}
+            </h1>
+        </div>
+        <button
+            type="button"
+            title="fermer"
+            mat-icon-button
+            [tabIndex]="-1"
+            (click)="close('cancel')"
+        >
+            <mat-icon
+                class="text-white"
+                [svgIcon]="'heroicons_outline:x-mark'"
+            />
+        </button>
+    </header>
+    <div class="bg-card overflow-y-auto rounded p-4 shadow">
+        <form [formGroup]="clientForm">
+            <div class="gt-xs:flex-row flex flex-col space-y-3">
+                <div class="flex">
+                    <mat-form-field
+                        class="mb-3 flex-auto"
+                        subscriptSizing="dynamic"
+                    >
+                        <mat-label>E-mail</mat-label>
+                        <input
+                            type="email"
+                            title="E-mail"
+                            matInput
+                            [formControlName]="'email'"
+                        />
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:at-symbol'"
+                        />
+                        @if (clientForm.get('email')?.hasError('required')) {
+                            <mat-error> L'e-mail est requis </mat-error>
+                        }
+                        @if (clientForm.get('email')?.hasError('email')) {
+                            <mat-error>
+                                Veuillez saisir une adresse e-mail valide
+                            </mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+
+                <div class="flex gap-2">
+                    <mat-form-field
+                        class="mb-3 flex-auto"
+                        subscriptSizing="dynamic"
+                    >
+                        <mat-label>Prénom</mat-label>
+                        <input
+                            title="Prénom"
+                            matInput
+                            required
+                            [formControlName]="'firstName'"
+                        />
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:user-circle'"
+                        />
+
+                        <mat-error> Le prénom est requis </mat-error>
+                    </mat-form-field>
+                    <mat-form-field
+                        class="mb-3 flex-auto"
+                        subscriptSizing="dynamic"
+                    >
+                        <mat-label>Nom de famille</mat-label>
+
+                        <input
+                            title="Nom de famille"
+                            matInput
+                            required
+                            [formControlName]="'lastName'"
+                        />
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:user-circle'"
+                        />
+                        <mat-error> Le nom de famille est requis </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="flex gap-2">
+                    <mat-form-field
+                        class="mb-3 flex-auto"
+                        subscriptSizing="dynamic"
+                    >
+                        <mat-label>CIN</mat-label>
+                        <input
+                            title="CIN"
+                            matInput
+                            required
+                            [formControlName]="'cin'"
+                        />
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:identification'"
+                        />
+
+                        @if (clientForm.get('cin')?.hasError('required')) {
+                            <mat-error> Le CIN est requis </mat-error>
+                        }
+                        @if (
+                            clientForm.get('cin')?.hasError('minlength') ||
+                            clientForm.get('cin')?.hasError('maxlength')
+                        ) {
+                            <mat-error>
+                                Le CIN doit contenir exactement 8 caractères
+                            </mat-error>
+                        }
+                    </mat-form-field>
+                    <mat-form-field
+                        class="mb-3 flex-auto"
+                        subscriptSizing="dynamic"
+                    >
+                        <mat-label>Numéro de téléphone</mat-label>
+                        <input
+                            title="Numéro de téléphone"
+                            matInput
+                            required
+                            [formControlName]="'phone'"
+                        />
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'mat_solid:phone'"
+                        />
+                        @if (clientForm.get('phone')?.hasError('required')) {
+                            <mat-error>
+                                Le numéro de téléphone est requis
+                            </mat-error>
+                        }
+                        @if (clientForm.get('phone')?.hasError('pattern')) {
+                            <mat-error>
+                                Le numéro de téléphone doit contenir 8 chiffres
+                            </mat-error>
+                        }
+                    </mat-form-field>
+                </div>
+
+                <div class="flex">
+                    <mat-form-field
+                        class="mb-3 flex-auto"
+                        subscriptSizing="dynamic"
+                    >
+                        <mat-label>Type de compte bancaire</mat-label>
+                        <mat-select [formControlName]="'accountType'">
+                            @for (
+                                option of bankAccountTypeOptions;
+                                track option.key
+                            ) {
+                                <mat-option [value]="option.key">
+                                    {{ option.displayName }}
+                                </mat-option>
+                            }
+                        </mat-select>
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:credit-card'"
+                        />
+                        <mat-error> Le type de compte est requis </mat-error>
+                    </mat-form-field>
+                </div>
+
+                <div class="flex">
+                    <mat-form-field
+                        class="mb-3 flex-auto"
+                        subscriptSizing="dynamic"
+                    >
+                        <mat-label>Agence STB</mat-label>
+                        <mat-select [formControlName]="'branchCode'">
+                            @for (branch of branches; track branch.code) {
+                                <mat-option [value]="branch.code">
+                                    {{ branch.code }} - {{ branch.name }} ({{
+                                        branch.governorate
+                                    }})
+                                </mat-option>
+                            }
+                        </mat-select>
+                        <mat-icon
+                            class="icon-size-5"
+                            matPrefix
+                            [svgIcon]="'heroicons_solid:building-office'"
+                        />
+                        <mat-error> L'agence est requise </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end">
+                <button
+                    type="button"
+                    class="px-8"
+                    mat-flat-button
+                    [color]="'primary'"
+                    [disabled]="!clientForm.valid || clientForm.disabled"
+                    (click)="submitForm()"
+                >
+                    @if (!clientForm.disabled) {
+                        <span>
+                            {{ updateMode() ? 'Mettre à jour' : 'Créer' }}
+                        </span>
+                    }
+                    @if (clientForm.disabled) {
+                        <mat-progress-spinner
+                            [diameter]="24"
+                            [mode]="'indeterminate'"
+                        />
+                    }
+                </button>
+            </div>
+        </form>
+    </div>
+</main>

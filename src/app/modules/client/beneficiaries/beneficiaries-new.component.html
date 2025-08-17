@@ -1,0 +1,94 @@
+<div
+    class="flex min-w-0 flex-auto flex-col bg-gray-200 sm:absolute sm:inset-0 sm:overflow-hidden dark:bg-transparent"
+>
+    <!-- Header -->
+    <div
+        class="bg-card relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8"
+    >
+        <!-- Title -->
+        <div class="text-4xl font-extrabold tracking-tight">
+            Mes Bénéficiaires
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center gap-3 sm:ml-4 sm:mt-0">
+            <!-- Add button -->
+            <button
+                mat-flat-button
+                class="ml-2"
+                type="button"
+                [color]="'primary'"
+                (click)="openAddDialog()"
+            >
+                <mat-icon>add</mat-icon>
+                <span class="ml-2">Ajouter un bénéficiaire</span>
+            </button>
+
+            <mat-form-field
+                class="fuse-mat-dense fuse-mat-rounded min-w-48 md:hidden"
+                [subscriptSizing]="'dynamic'"
+            >
+                <mat-icon
+                    class="icon-size-5"
+                    matPrefix
+                    [svgIcon]="'heroicons_solid:magnifying-glass'"
+                />
+                <input
+                    matInput
+                    class="truncate"
+                    title="rechercher"
+                    [formControl]="searchInputControl"
+                    [autocomplete]="'off'"
+                    [placeholder]="'Rechercher...'"
+                />
+            </mat-form-field>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div
+        class="flex justify-between bg-gray-200 p-10 sm:overflow-x-auto sm:overflow-y-auto dark:bg-transparent"
+    >
+        <div
+            class="max-w-8xl mx-auto flex w-full flex-auto flex-col rounded-lg sm:overflow-x-auto sm:overflow-y-auto"
+        >
+            <mtx-grid
+                [data]="beneficiaries()"
+                [columns]="columns()"
+                [loading]="isLoading()"
+                [columnResizable]="false"
+                [rowStriped]="false"
+                [showToolbar]="true"
+                [pageOnFront]="false"
+                [toolbarTemplate]="toolbarTpl"
+                [columnMenuButtonText]="'Colonnes'"
+                [columnMenuButtonType]="'stroked'"
+                [columnMenuButtonColor]="'primary'"
+                [noResultText]="'Aucun bénéficiaire trouvé.'"
+            >
+                <ng-template #toolbarTpl>
+                    <div class="flex w-full items-center gap-2">
+                        <mat-form-field
+                            class="fuse-mat-dense hidden w-full bg-white md:block"
+                            [subscriptSizing]="'dynamic'"
+                        >
+                            <mat-icon
+                                class="icon-size-5"
+                                matPrefix
+                                [svgIcon]="'heroicons_solid:magnifying-glass'"
+                            />
+                            <input
+                                matInput
+                                class="truncate"
+                                title="rechercher"
+                                [formControl]="searchInputControl"
+                                [autocomplete]="'off'"
+                                [placeholder]="'Rechercher...'"
+                            />
+                        </mat-form-field>
+                    </div>
+                </ng-template>
+            </mtx-grid>
+        </div>
+    </div>
+</div>

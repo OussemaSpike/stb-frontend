@@ -1,12 +1,12 @@
 import { NgClass } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    inject,
-    Input,
-    OnDestroy,
-    OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  input
 } from '@angular/core';
 import { FuseHorizontalNavigationComponent } from '@fuse/components/navigation/horizontal/horizontal.component';
 import { FuseNavigationService } from '@fuse/components/navigation/navigation.service';
@@ -25,8 +25,8 @@ export class FuseHorizontalNavigationDividerItemComponent
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _fuseNavigationService = inject(FuseNavigationService);
 
-    @Input() item: FuseNavigationItem;
-    @Input() name: string;
+    readonly item = input<FuseNavigationItem>(undefined);
+    readonly name = input<string>(undefined);
 
     private _fuseHorizontalNavigationComponent: FuseHorizontalNavigationComponent;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -41,7 +41,7 @@ export class FuseHorizontalNavigationDividerItemComponent
     ngOnInit(): void {
         // Get the parent navigation component
         this._fuseHorizontalNavigationComponent =
-            this._fuseNavigationService.getComponent(this.name);
+            this._fuseNavigationService.getComponent(this.name());
 
         // Subscribe to onRefreshed on the navigation component
         this._fuseHorizontalNavigationComponent.onRefreshed

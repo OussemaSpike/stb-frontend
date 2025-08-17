@@ -1,7 +1,14 @@
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+    Component,
+    inject,
+    OnDestroy,
+    OnInit,
+    ViewEncapsulation,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { FuseFullscreenComponent } from '@fuse/components/fullscreen';
 import { FuseLoadingBarComponent } from '@fuse/components/loading-bar';
 import {
@@ -11,11 +18,13 @@ import {
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
+import { UserService } from 'app/core/user/user.service';
 
 import { NotificationsComponent } from 'app/layout/common/notifications/notifications.component';
 
 import { UserComponent } from 'app/layout/common/user/user.component';
-import { Subject, takeUntil } from 'rxjs';
+import { RoleEnum } from 'app/shared/models';
+import { map, Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'classic-layout',
@@ -33,20 +42,20 @@ import { Subject, takeUntil } from 'rxjs';
     ],
 })
 export class ClassicLayoutComponent implements OnInit, OnDestroy {
+    private _navigationService = inject(NavigationService);
+    private _fuseMediaWatcherService = inject(FuseMediaWatcherService);
+    private _fuseNavigationService = inject(FuseNavigationService);
+    private _userService = inject(UserService);
+
     isScreenSmall: boolean;
     navigation: Navigation;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
-    /**
-     * Constructor
-     */
-    constructor(
-        private _activatedRoute: ActivatedRoute,
-        private _router: Router,
-        private _navigationService: NavigationService,
-        private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _fuseNavigationService: FuseNavigationService
-    ) {}
+    readonly isClient = toSignal(
+        this._userService.user$.pipe(
+            map((user) => user.roles.includes(RoleEnum.CLIENT))
+        )
+    );
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors

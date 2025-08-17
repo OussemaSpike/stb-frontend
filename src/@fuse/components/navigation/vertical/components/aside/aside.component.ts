@@ -1,15 +1,16 @@
 import { BooleanInput } from '@angular/cdk/coercion';
 import { NgClass } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    Input,
-    OnChanges,
-    OnDestroy,
-    OnInit,
-    SimpleChanges,
-    inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+  inject,
+  input
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -51,11 +52,11 @@ export class FuseVerticalNavigationAsideItemComponent
     private _router = inject(Router);
     private _fuseNavigationService = inject(FuseNavigationService);
 
-    @Input() activeItemId: string;
-    @Input() autoCollapse: boolean;
+    readonly activeItemId = input<string>(undefined);
+    readonly autoCollapse = input<boolean>(undefined);
     @Input() item: FuseNavigationItem;
-    @Input() name: string;
-    @Input() skipChildren: boolean;
+    readonly name = input<string>(undefined);
+    readonly skipChildren = input<boolean>(undefined);
 
     active: boolean = false;
     private _fuseVerticalNavigationComponent: FuseVerticalNavigationComponent;
@@ -101,7 +102,7 @@ export class FuseVerticalNavigationAsideItemComponent
 
         // Get the parent navigation component
         this._fuseVerticalNavigationComponent =
-            this._fuseNavigationService.getComponent(this.name);
+            this._fuseNavigationService.getComponent(this.name());
 
         // Subscribe to onRefreshed on the navigation component
         this._fuseVerticalNavigationComponent.onRefreshed
@@ -188,7 +189,7 @@ export class FuseVerticalNavigationAsideItemComponent
      */
     private _markIfActive(currentUrl: string): void {
         // Check if the activeItemId is equals to this item id
-        this.active = this.activeItemId === this.item.id;
+        this.active = this.activeItemId() === this.item.id;
 
         // If the aside has a children that is active,
         // always mark it as active

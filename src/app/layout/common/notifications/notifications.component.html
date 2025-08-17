@@ -1,49 +1,78 @@
 <!-- Notifications toggle -->
-<button mat-icon-button (click)="openPanel()" #notificationsOrigin>
-    @if (unreadCount > 0) {
+<button
+    #notificationsOrigin
+    type="button"
+    aria-label="Notifications"
+    mat-icon-button
+    (click)="openPanel()"
+>
+    @if (unreadCount() > 0) {
         <span
             class="absolute left-0 right-0 top-0 flex h-3 items-center justify-center"
         >
             <span
-                class="ml-4 mt-2.5 flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-teal-600 px-1 text-xs font-medium text-indigo-50"
+                class="z-30 ml-4 mt-2 flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full bg-teal-600 px-1 text-xs font-medium text-indigo-50"
             >
-                {{ unreadCount }}
+                {{ unreadCount() > 99 ? '99+' : unreadCount() }}
             </span>
         </span>
     }
-    <mat-icon [svgIcon]="'heroicons_outline:bell'"></mat-icon>
+    <mat-icon [svgIcon]="'heroicons_outline:bell'" />
 </button>
 
 <!-- Notifications panel -->
 <ng-template #notificationsPanel>
     <div
-        class="fixed inset-0 flex flex-col overflow-hidden shadow-lg sm:static sm:inset-auto sm:w-90 sm:min-w-90 sm:rounded-2xl"
+        class="fixed inset-0 flex flex-col overflow-hidden shadow-lg sm:static sm:inset-auto sm:w-100 sm:min-w-90 sm:rounded-2xl"
     >
         <!-- Header -->
         <div
             class="flex shrink-0 items-center bg-primary py-4 pl-6 pr-4 text-on-primary"
         >
             <div class="-ml-1 mr-3 sm:hidden">
-                <button mat-icon-button (click)="closePanel()">
+                <button type="button" mat-icon-button (click)="closePanel()">
                     <mat-icon
-                        class="text-current icon-size-5"
+                        class="text-white icon-size-5"
                         [svgIcon]="'heroicons_solid:x-mark'"
-                    ></mat-icon>
+                    />
                 </button>
             </div>
             <div class="text-lg font-medium leading-10">Notifications</div>
             <div class="ml-auto">
                 <button
-                    class="dark:text-white"
+                    type="button"
                     mat-icon-button
-                    [matTooltip]="'Mark all as read'"
-                    [disabled]="unreadCount === 0"
+                    [matTooltip]="'Marquer tout comme lu'"
+                    [disabled]="unreadCount() === 0"
                     (click)="markAllAsRead()"
                 >
                     <mat-icon
                         class="text-current icon-size-5"
                         [svgIcon]="'heroicons_solid:envelope-open'"
-                    ></mat-icon>
+                    />
+                </button>
+                <button
+                    mat-icon-button
+                    type="button"
+                    [matTooltip]="'Tout effacer'"
+                    [disabled]="notifications().length === 0"
+                    (click)="clearAll()"
+                >
+                    <mat-icon
+                        class="text-current icon-size-5"
+                        [svgIcon]="'heroicons_solid:trash'"
+                    />
+                </button>
+                <button
+                    mat-icon-button
+                    type="button"
+                    [matTooltip]="'Fermer'"
+                    (click)="closePanel()"
+                >
+                    <mat-icon
+                        class="text-current icon-size-5"
+                        [svgIcon]="'heroicons_solid:x-mark'"
+                    />
                 </button>
             </div>
         </div>
@@ -53,131 +82,152 @@
             class="bg-card relative flex flex-auto flex-col divide-y overflow-y-auto sm:max-h-120"
         >
             <!-- Notifications -->
-            @for (
-                notification of notifications;
-                track trackByFn($index, notification)
-            ) {
+            @for (notification of notifications(); track notification.id) {
                 <div
                     class="group flex hover:bg-gray-50 dark:hover:bg-black dark:hover:bg-opacity-5"
-                    [ngClass]="{ unread: !notification.read }"
+                    [ngClass]="{ unread: !notification.isRead }"
                 >
-                    <!-- Notification with a link -->
-                    @if (notification.link) {
-                        <!-- Normal links -->
-                        @if (!notification.useRouter) {
-                            <a
-                                class="flex flex-auto cursor-pointer py-5 pl-6"
-                                [href]="notification.link"
-                            >
-                                <ng-container
-                                    *ngTemplateOutlet="notificationContent"
-                                ></ng-container>
-                            </a>
-                        }
-                        <!-- Router links -->
-                        @if (notification.useRouter) {
-                            <a
-                                class="flex flex-auto cursor-pointer py-5 pl-6"
-                                [routerLink]="notification.link"
-                            >
-                                <ng-container
-                                    *ngTemplateOutlet="notificationContent"
-                                ></ng-container>
-                            </a>
-                        }
-                    }
+                    <!-- Router links -->
 
-                    <!-- Notification without a link -->
-                    @if (!notification.link) {
-                        <div class="flex flex-auto py-5 pl-6">
-                            <ng-container
-                                *ngTemplateOutlet="notificationContent"
-                            ></ng-container>
-                        </div>
-                    }
+                    <button
+                        type="button"
+                        class="flex flex-auto cursor-pointer py-5 pl-6"
+                        (click)="navigateToNotification(notification)"
+                    >
+                        <ng-container *ngTemplateOutlet="notificationContent" />
+                    </button>
 
                     <!-- Actions -->
-                    <div class="relative my-5 ml-2 mr-6 flex flex-col">
-                        <!-- Indicator -->
-                        <button
-                            class="h-6 min-h-6 w-6"
-                            mat-icon-button
-                            (click)="toggleRead(notification)"
-                            [matTooltip]="
-                                notification.read
-                                    ? 'Mark as unread'
-                                    : 'Mark as read'
-                            "
-                        >
-                            <span
-                                class="h-2 w-2 rounded-full"
-                                [ngClass]="{
-                                    'bg-gray-400 dark:bg-gray-500 sm:opacity-0 sm:group-hover:opacity-100':
-                                        notification.read,
-                                    'bg-primary': !notification.read,
-                                }"
-                            ></span>
-                        </button>
+                    <div class="relative my-5 ml-2 mr-6 flex flex-col gap-6">
+                        @if (!notification.isRead) {
+                            <!-- Indicator -->
+                            <button
+                                type="button"
+                                class="h-6 min-h-6 w-6"
+                                mat-icon-button
+                                [matTooltip]="'Marquer comme lu'"
+                                (click)="markAsRead(notification)"
+                            >
+                                <span
+                                    class="h-2 w-2 rounded-full"
+                                    [ngClass]="{
+                                        'bg-gray-400 sm:opacity-0 sm:group-hover:opacity-100 dark:bg-gray-500':
+                                            notification.isRead,
+                                        'bg-primary': !notification.isRead,
+                                    }"
+                                ></span>
+                            </button>
+                        }
+
                         <!-- Remove -->
                         <button
                             class="h-6 min-h-6 w-6 sm:opacity-0 sm:group-hover:opacity-100"
                             mat-icon-button
+                            type="button"
+                            [matTooltip]="'Supprimer'"
                             (click)="delete(notification)"
-                            [matTooltip]="'Remove'"
                         >
                             <mat-icon
                                 class="icon-size-4"
                                 [svgIcon]="'heroicons_solid:x-mark'"
-                            ></mat-icon>
+                            />
                         </button>
                     </div>
                 </div>
-
                 <!-- Notification content template -->
                 <ng-template #notificationContent>
-                    <!-- Icon -->
-                    @if (notification.icon && !notification.image) {
-                        <div
-                            class="mr-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700"
-                        >
-                            <mat-icon
-                                class="icon-size-5"
-                                [svgIcon]="notification.icon"
-                            >
-                            </mat-icon>
-                        </div>
-                    }
-                    <!-- Image -->
-                    @if (notification.image) {
-                        <img
-                            class="mr-4 h-8 w-8 shrink-0 overflow-hidden rounded-full object-cover object-center"
-                            [src]="notification.image"
-                            [alt]="'Notification image'"
-                        />
-                    }
-                    <!-- Title, description & time -->
-                    <div class="flex flex-auto flex-col">
-                        @if (notification.title) {
-                            <div
-                                class="line-clamp-1 font-semibold"
-                                [innerHTML]="notification.title"
-                            ></div>
+                    @switch (notification.type) {
+                        @case ('FOUNDATION_DOCUMENT_UPLOADED') {
+                            <!-- Foundation document uploaded notification -->
+                            <div class="flex flex-auto flex-col gap-1">
+                                <div class="flex items-center gap-1">
+                                    <mat-icon
+                                        class="text-blue-500 icon-size-6"
+                                        [svgIcon]="
+                                            'heroicons_solid:document-arrow-up'
+                                        "
+                                    />
+                                    <p class="line-clamp-1 font-bold">
+                                        Document fondation uploadé
+                                    </p>
+                                </div>
+                                <div class="text-secondary text-sm">
+                                    <p class="line-clamp-2">
+                                        Un nouveau document a été uploadé
+                                    </p>
+                                </div>
+                            </div>
                         }
-                        @if (notification.description) {
-                            <div
-                                class="line-clamp-2"
-                                [innerHTML]="notification.description"
-                            ></div>
+                        @case ('FOUNDATION_DOCUMENT_VALIDATED') {
+                            <!-- Foundation document validated notification -->
+                            <div class="flex flex-auto flex-col gap-1">
+                                <div class="flex items-center gap-1">
+                                    <mat-icon
+                                        class="text-green-500 icon-size-6"
+                                        [svgIcon]="
+                                            'heroicons_solid:check-circle'
+                                        "
+                                    />
+                                    <p class="line-clamp-1 font-bold">
+                                        Document fondation validé
+                                    </p>
+                                </div>
+                                <div class="text-secondary text-sm">
+                                    <p class="line-clamp-2">
+                                        Votre document a été validé
+                                    </p>
+                                </div>
+                            </div>
                         }
-                        <div class="text-secondary mt-2 text-sm leading-none">
-                            {{ notification.time | date: 'MMM dd, h:mm a' }}
-                        </div>
-                    </div>
+                        @case ('FOUNDATION_DOCUMENT_REJECTED') {
+                            <!-- Foundation document rejected notification -->
+                            <div class="flex flex-auto flex-col gap-1">
+                                <div class="flex items-center gap-1">
+                                    <mat-icon
+                                        class="text-red-500 icon-size-6"
+                                        [svgIcon]="'heroicons_solid:x-circle'"
+                                    />
+                                    <p class="line-clamp-1 font-bold">
+                                        Document fondation rejeté
+                                    </p>
+                                </div>
+                                <div class="text-secondary text-sm">
+                                    <p class="line-clamp-2">
+                                        Votre document a été rejeté
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                        @case ('NEW_TRANSFER_CREATED') {
+                            <notif-transfer-notification
+                                [notification]="notification"
+                            />
+                        }
+                        @case ('TRANSFER_APPROVED') {
+                            <notif-transfer-notification
+                                [notification]="notification"
+                            />
+                        }
+                        @case ('TRANSFER_REJECTED') {
+                            <notif-transfer-notification
+                                [notification]="notification"
+                            />
+                        }
+                        @case ('TRANSFER_COMPLETED') {
+                            <notif-transfer-notification
+                                [notification]="notification"
+                            />
+                        }
+                        @case ('TRANSFER_FAILED') {
+                            <notif-transfer-notification
+                                [notification]="notification"
+                            />
+                        }
+                    }
                 </ng-template>
             }
 
-            <!-- No notifications -->
-            @if (!notifications || !notifications.length) {
+            @if (notifications().length === 0 && !loadingNotifications()) {
                 <div
                     class="flex flex-auto flex-col items-center justify-center px-8 py-12 sm:justify-start"
                 >
@@ -187,16 +237,26 @@
                         <mat-icon
                             class="text-primary-700 dark:text-primary-50"
                             [svgIcon]="'heroicons_outline:bell'"
-                        ></mat-icon>
+                        />
                     </div>
                     <div class="mt-5 text-2xl font-semibold tracking-tight">
-                        No notifications
+                        Aucune notification
                     </div>
                     <div
                         class="text-secondary mt-1 w-full max-w-60 text-center text-md"
                     >
-                        When you have notifications, they will appear here.
+                        Lorsque vous recevrez des notifications, elles
+                        apparaîtront ici
                     </div>
+                </div>
+            }
+
+            @if (loadingNotifications()) {
+                <div class="flex h-full w-full items-center justify-center">
+                    <mat-progress-spinner
+                        mode="indeterminate"
+                        [diameter]="80"
+                    />
                 </div>
             }
         </div>

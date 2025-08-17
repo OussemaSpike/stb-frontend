@@ -1,12 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import {
-    Component,
-    Inject,
-    OnDestroy,
-    OnInit,
-    Renderer2,
-    ViewEncapsulation,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, Renderer2, ViewEncapsulation, inject } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { FuseConfig, FuseConfigService } from '@fuse/services/config';
 import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
@@ -24,24 +17,19 @@ import { EmptyLayoutComponent } from './layouts/empty/empty.component';
     imports: [EmptyLayoutComponent, ClassicLayoutComponent],
 })
 export class LayoutComponent implements OnInit, OnDestroy {
+    private _activatedRoute = inject(ActivatedRoute);
+    private _document = inject(DOCUMENT);
+    private _renderer2 = inject(Renderer2);
+    private _router = inject(Router);
+    private _fuseConfigService = inject(FuseConfigService);
+    private _fuseMediaWatcherService = inject(FuseMediaWatcherService);
+    private _fusePlatformService = inject(FusePlatformService);
+
     config: FuseConfig;
     layout: string;
     scheme: 'dark' | 'light';
     theme: string;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
-
-    /**
-     * Constructor
-     */
-    constructor(
-        private _activatedRoute: ActivatedRoute,
-        @Inject(DOCUMENT) private _document: any,
-        private _renderer2: Renderer2,
-        private _router: Router,
-        private _fuseConfigService: FuseConfigService,
-        private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _fusePlatformService: FusePlatformService
-    ) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks

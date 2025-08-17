@@ -1,15 +1,15 @@
 import { BooleanInput } from '@angular/cdk/coercion';
 import { NgClass, NgTemplateOutlet } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    Input,
-    OnDestroy,
-    OnInit,
-    ViewChild,
-    forwardRef,
-    inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  forwardRef,
+  inject,
+  input
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenu, MatMenuModule } from '@angular/material/menu';
@@ -46,9 +46,9 @@ export class FuseHorizontalNavigationBranchItemComponent
     private _changeDetectorRef = inject(ChangeDetectorRef);
     private _fuseNavigationService = inject(FuseNavigationService);
 
-    @Input() child: boolean = false;
-    @Input() item: FuseNavigationItem;
-    @Input() name: string;
+    readonly child = input<boolean>(false);
+    readonly item = input<FuseNavigationItem>(undefined);
+    readonly name = input<string>(undefined);
     @ViewChild('matMenu', { static: true }) matMenu: MatMenu;
 
     private _fuseHorizontalNavigationComponent: FuseHorizontalNavigationComponent;
@@ -64,7 +64,7 @@ export class FuseHorizontalNavigationBranchItemComponent
     ngOnInit(): void {
         // Get the parent navigation component
         this._fuseHorizontalNavigationComponent =
-            this._fuseNavigationService.getComponent(this.name);
+            this._fuseNavigationService.getComponent(this.name());
 
         // Subscribe to onRefreshed on the navigation component
         this._fuseHorizontalNavigationComponent.onRefreshed

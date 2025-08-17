@@ -1,19 +1,20 @@
 import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion';
 
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    EventEmitter,
-    HostBinding,
-    Input,
-    OnChanges,
-    OnDestroy,
-    OnInit,
-    Output,
-    SimpleChanges,
-    ViewEncapsulation,
-    inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewEncapsulation,
+  inject,
+  input
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -47,12 +48,12 @@ export class FuseAlertComponent implements OnChanges, OnInit, OnDestroy {
     private _fuseAlertService = inject(FuseAlertService);
     private _fuseUtilsService = inject(FuseUtilsService);
 
-    @Input() appearance: FuseAlertAppearance = 'soft';
+    readonly appearance = input<FuseAlertAppearance>('soft');
     @Input() dismissed: boolean = false;
     @Input() dismissible: boolean = false;
-    @Input() name: string = this._fuseUtilsService.randomId();
+    readonly name = input<string>(this._fuseUtilsService.randomId());
     @Input() showIcon: boolean = true;
-    @Input() type: FuseAlertType = 'primary';
+    readonly type = input<FuseAlertType>('primary');
     @Output() readonly dismissedChanged: EventEmitter<boolean> =
         new EventEmitter<boolean>();
 
@@ -68,21 +69,21 @@ export class FuseAlertComponent implements OnChanges, OnInit, OnDestroy {
     @HostBinding('class') get classList(): any {
         /* eslint-disable @typescript-eslint/naming-convention */
         return {
-            'fuse-alert-appearance-border': this.appearance === 'border',
-            'fuse-alert-appearance-fill': this.appearance === 'fill',
-            'fuse-alert-appearance-outline': this.appearance === 'outline',
-            'fuse-alert-appearance-soft': this.appearance === 'soft',
+            'fuse-alert-appearance-border': this.appearance() === 'border',
+            'fuse-alert-appearance-fill': this.appearance() === 'fill',
+            'fuse-alert-appearance-outline': this.appearance() === 'outline',
+            'fuse-alert-appearance-soft': this.appearance() === 'soft',
             'fuse-alert-dismissed': this.dismissed,
             'fuse-alert-dismissible': this.dismissible,
             'fuse-alert-show-icon': this.showIcon,
-            'fuse-alert-type-primary': this.type === 'primary',
-            'fuse-alert-type-accent': this.type === 'accent',
-            'fuse-alert-type-warn': this.type === 'warn',
-            'fuse-alert-type-basic': this.type === 'basic',
-            'fuse-alert-type-info': this.type === 'info',
-            'fuse-alert-type-success': this.type === 'success',
-            'fuse-alert-type-warning': this.type === 'warning',
-            'fuse-alert-type-error': this.type === 'error',
+            'fuse-alert-type-primary': this.type() === 'primary',
+            'fuse-alert-type-accent': this.type() === 'accent',
+            'fuse-alert-type-warn': this.type() === 'warn',
+            'fuse-alert-type-basic': this.type() === 'basic',
+            'fuse-alert-type-info': this.type() === 'info',
+            'fuse-alert-type-success': this.type() === 'success',
+            'fuse-alert-type-warning': this.type() === 'warning',
+            'fuse-alert-type-error': this.type() === 'error',
         };
         /* eslint-enable @typescript-eslint/naming-convention */
     }
@@ -132,7 +133,7 @@ export class FuseAlertComponent implements OnChanges, OnInit, OnDestroy {
         // Subscribe to the dismiss calls
         this._fuseAlertService.onDismiss
             .pipe(
-                filter((name) => this.name === name),
+                filter((name) => this.name() === name),
                 takeUntil(this._unsubscribeAll)
             )
             .subscribe(() => {
@@ -143,7 +144,7 @@ export class FuseAlertComponent implements OnChanges, OnInit, OnDestroy {
         // Subscribe to the show calls
         this._fuseAlertService.onShow
             .pipe(
-                filter((name) => this.name === name),
+                filter((name) => this.name() === name),
                 takeUntil(this._unsubscribeAll)
             )
             .subscribe(() => {

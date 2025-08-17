@@ -1,14 +1,15 @@
 import {
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    Input,
-    OnChanges,
-    OnDestroy,
-    OnInit,
-    SimpleChanges,
-    ViewEncapsulation,
-    inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+  ViewEncapsulation,
+  inject,
+  input
 } from '@angular/core';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseNavigationService } from '@fuse/components/navigation/navigation.service';
@@ -41,7 +42,7 @@ export class FuseHorizontalNavigationComponent
     private _fuseUtilsService = inject(FuseUtilsService);
 
     @Input() name: string = this._fuseUtilsService.randomId();
-    @Input() navigation: FuseNavigationItem[];
+    readonly navigation = input<FuseNavigationItem[]>(undefined);
 
     onRefreshed: ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
     private _unsubscribeAll: Subject<any> = new Subject<any>();

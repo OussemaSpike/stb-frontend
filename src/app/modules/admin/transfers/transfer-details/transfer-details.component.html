@@ -1,0 +1,590 @@
+<div class="flex min-w-0 flex-auto flex-col bg-gray-50 dark:bg-transparent">
+    <!-- Header -->
+    <div
+        class="bg-card sticky top-0 z-10 flex flex-0 items-center border-b px-6 py-4 shadow-sm sm:px-8"
+    >
+        <div class="flex items-center space-x-4">
+            <button
+                mat-icon-button
+                (click)="goBack()"
+                matTooltip="Retour à la liste des virements"
+                class="text-secondary hover:text-primary"
+            >
+                <mat-icon [svgIcon]="'heroicons_outline:arrow-left'"></mat-icon>
+            </button>
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-primary">
+                    Virement #{{ transfer()?.reference }}
+                </h1>
+                @if (transfer()) {
+                    <p class="text-secondary mt-1 text-sm">
+                        Créé le
+                        {{
+                            transfer()?.createdAt
+                                | date: 'dd MMMM yyyy à HH:mm' : 'fr'
+                        }}
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-auto p-6 sm:p-8">
+        <!-- Loading State -->
+        @if (isLoading()) {
+            <div class="flex h-96 items-center justify-center">
+                <div class="text-center">
+                    <mat-spinner diameter="48"></mat-spinner>
+                    <p class="text-secondary mt-4">
+                        Chargement des détails du virement...
+                    </p>
+                </div>
+            </div>
+        }
+
+        <!-- Main Content -->
+        @if (!isLoading() && transfer()) {
+            <div class="mx-auto max-w-4xl space-y-8">
+                <!-- Status and Actions Section -->
+                <div class="bg-card rounded-xl border p-6 shadow-sm">
+                    <div
+                        class="flex flex-col items-start justify-between space-y-4 sm:flex-row sm:items-center sm:space-y-0"
+                    >
+                        <div>
+                            <h2 class="text-xl font-semibold">
+                                Statut du virement
+                            </h2>
+                            <div class="mt-2">
+                                <mat-chip
+                                    class="text-sm font-medium"
+                                    [ngClass]="{
+                                        'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300':
+                                            transfer()?.status ===
+                                            TransferStatus.PENDING,
+                                        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300':
+                                            transfer()?.status ===
+                                            TransferStatus.COMPLETED,
+                                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300':
+                                            transfer()?.status ===
+                                            TransferStatus.FAILED,
+                                        'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300':
+                                            transfer()?.status ===
+                                            TransferStatus.CANCELLED,
+                                    }"
+                                >
+                                    {{
+                                        getStatusInfo(transfer()!.status)
+                                            .displayName
+                                    }}
+                                </mat-chip>
+                            </div>
+                        </div>
+
+                        <!-- Action buttons for pending transfers -->
+                        @if (
+                            transfer()?.status === TransferStatus.PENDING &&
+                            !showValidationForm() &&
+                            !showRejectionForm()
+                        ) {
+                            <div class="flex space-x-3">
+                                <button
+                                    mat-flat-button
+                                    color="primary"
+                                    [disabled]="isProcessing()"
+                                    (click)="showValidation()"
+                                    class="min-w-32"
+                                >
+                                    <mat-icon
+                                        class="mr-2"
+                                        [svgIcon]="'heroicons_outline:check'"
+                                    ></mat-icon>
+                                    Valider
+                                </button>
+                                <button
+                                    mat-stroked-button
+                                    color="warn"
+                                    [disabled]="isProcessing()"
+                                    (click)="showRejection()"
+                                    class="min-w-32"
+                                >
+                                    <mat-icon
+                                        class="mr-2"
+                                        [svgIcon]="'heroicons_outline:x-mark'"
+                                    ></mat-icon>
+                                    Rejeter
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Validation Form -->
+                @if (showValidationForm()) {
+                    <mat-card class="overflow-hidden">
+                        <mat-card-header
+                            class="bg-primary-50 dark:bg-primary-900/20"
+                        >
+                            <mat-card-title
+                                class="flex items-center text-primary"
+                            >
+                                <mat-icon
+                                    class="mr-2"
+                                    [svgIcon]="'heroicons_outline:check-circle'"
+                                ></mat-icon>
+                                Validation du virement
+                            </mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content class="p-6">
+                            <form
+                                [formGroup]="validationForm"
+                                class="space-y-6"
+                            >
+                                <mat-form-field
+                                    appearance="outline"
+                                    class="w-full"
+                                >
+                                    <mat-label
+                                        >Commentaire de validation
+                                        (optionnel)</mat-label
+                                    >
+                                    <textarea
+                                        matInput
+                                        formControlName="comment"
+                                        placeholder="Ajoutez un commentaire pour cette validation..."
+                                        rows="3"
+                                        maxlength="500"
+                                    ></textarea>
+                                    <mat-hint align="end"
+                                        >{{
+                                            validationForm.get('comment')?.value
+                                                ?.length || 0
+                                        }}/500</mat-hint
+                                    >
+                                </mat-form-field>
+
+                                <mat-form-field
+                                    appearance="outline"
+                                    class="w-full"
+                                >
+                                    <mat-label
+                                        >Notes administratives
+                                        (optionnel)</mat-label
+                                    >
+                                    <textarea
+                                        matInput
+                                        formControlName="adminNotes"
+                                        placeholder="Notes internes pour l'équipe administrative..."
+                                        rows="4"
+                                        maxlength="1000"
+                                    ></textarea>
+                                    <mat-hint align="end"
+                                        >{{
+                                            validationForm.get('adminNotes')
+                                                ?.value?.length || 0
+                                        }}/1000</mat-hint
+                                    >
+                                </mat-form-field>
+
+                                <div class="flex justify-end space-x-3 pt-4">
+                                    <button
+                                        mat-button
+                                        type="button"
+                                        (click)="cancelAction()"
+                                        [disabled]="isProcessing()"
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button
+                                        mat-flat-button
+                                        color="primary"
+                                        type="button"
+                                        [disabled]="
+                                            isProcessing() ||
+                                            validationForm.invalid
+                                        "
+                                        (click)="submitValidation()"
+                                        class="min-w-32"
+                                    >
+                                        @if (isProcessing()) {
+                                            <mat-spinner
+                                                diameter="20"
+                                                class="mr-2"
+                                            ></mat-spinner>
+                                        }
+                                        Valider le virement
+                                    </button>
+                                </div>
+                            </form>
+                        </mat-card-content>
+                    </mat-card>
+                }
+
+                <!-- Rejection Form -->
+                @if (showRejectionForm()) {
+                    <mat-card class="overflow-hidden">
+                        <mat-card-header class="bg-red-50 dark:bg-red-900/20">
+                            <mat-card-title
+                                class="flex items-center text-red-600"
+                            >
+                                <mat-icon
+                                    class="mr-2"
+                                    [svgIcon]="'heroicons_outline:x-circle'"
+                                ></mat-icon>
+                                Rejet du virement
+                            </mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content class="p-6">
+                            <form [formGroup]="rejectionForm" class="space-y-6">
+                                <mat-form-field
+                                    appearance="outline"
+                                    class="w-full"
+                                >
+                                    <mat-label>Raison du rejet *</mat-label>
+                                    <textarea
+                                        matInput
+                                        formControlName="reason"
+                                        placeholder="Expliquez pourquoi ce virement est rejeté (minimum 10 caractères)..."
+                                        rows="3"
+                                        required
+                                    ></textarea>
+                                    @if (
+                                        rejectionForm.get('reason')?.errors?.[
+                                            'required'
+                                        ]
+                                    ) {
+                                        <mat-error
+                                            >La raison du rejet est
+                                            obligatoire</mat-error
+                                        >
+                                    }
+                                    @if (
+                                        rejectionForm.get('reason')?.errors?.[
+                                            'minlength'
+                                        ]
+                                    ) {
+                                        <mat-error
+                                            >La raison doit contenir au moins 10
+                                            caractères</mat-error
+                                        >
+                                    }
+                                </mat-form-field>
+
+                                <mat-form-field
+                                    appearance="outline"
+                                    class="w-full"
+                                >
+                                    <mat-label
+                                        >Notes supplémentaires
+                                        (optionnel)</mat-label
+                                    >
+                                    <textarea
+                                        matInput
+                                        formControlName="additionalNotes"
+                                        placeholder="Notes internes supplémentaires..."
+                                        rows="4"
+                                        maxlength="1000"
+                                    ></textarea>
+                                    <mat-hint align="end"
+                                        >{{
+                                            rejectionForm.get('additionalNotes')
+                                                ?.value?.length || 0
+                                        }}/1000</mat-hint
+                                    >
+                                </mat-form-field>
+
+                                <div class="flex justify-end space-x-3 pt-4">
+                                    <button
+                                        mat-button
+                                        type="button"
+                                        (click)="cancelAction()"
+                                        [disabled]="isProcessing()"
+                                    >
+                                        Annuler
+                                    </button>
+                                    <button
+                                        mat-flat-button
+                                        color="warn"
+                                        type="button"
+                                        [disabled]="
+                                            isProcessing() ||
+                                            rejectionForm.invalid
+                                        "
+                                        (click)="submitRejection()"
+                                        class="min-w-32"
+                                    >
+                                        @if (isProcessing()) {
+                                            <mat-spinner
+                                                diameter="20"
+                                                class="mr-2"
+                                            ></mat-spinner>
+                                        }
+                                        Rejeter le virement
+                                    </button>
+                                </div>
+                            </form>
+                        </mat-card-content>
+                    </mat-card>
+                }
+
+                <!-- Transfer Details Grid -->
+                <div class="grid gap-6 lg:grid-cols-2">
+                    <!-- General Information -->
+                    <mat-card class="h-fit">
+                        <mat-card-header>
+                            <mat-card-title class="flex items-center">
+                                <mat-icon
+                                    class="mr-2 text-blue-600"
+                                    [svgIcon]="
+                                        'heroicons_outline:information-circle'
+                                    "
+                                ></mat-icon>
+                                Informations générales
+                            </mat-card-title>
+                        </mat-card-header>
+                        <mat-divider></mat-divider>
+                        <mat-card-content class="space-y-4 p-6">
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label
+                                        class="text-sm font-medium text-gray-500"
+                                        >Référence</label
+                                    >
+                                    <p class="mt-1 font-mono text-sm">
+                                        {{ transfer()?.reference }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label
+                                        class="text-sm font-medium text-gray-500"
+                                        >Date de création</label
+                                    >
+                                    <p class="mt-1 text-sm">
+                                        {{
+                                            transfer()?.createdAt
+                                                | date: 'dd/MM/yyyy HH:mm'
+                                        }}
+                                    </p>
+                                </div>
+                                @if (transfer()?.executionDate) {
+                                    <div class="sm:col-span-2">
+                                        <label
+                                            class="text-sm font-medium text-gray-500"
+                                            >Date d'exécution</label
+                                        >
+                                        <p class="mt-1 text-sm">
+                                            {{
+                                                transfer()?.executionDate
+                                                    | date: 'dd/MM/yyyy HH:mm'
+                                            }}
+                                        </p>
+                                    </div>
+                                }
+                            </div>
+                        </mat-card-content>
+                    </mat-card>
+
+                    <!-- Financial Information -->
+                    <mat-card class="h-fit">
+                        <mat-card-header>
+                            <mat-card-title class="flex items-center">
+                                <mat-icon
+                                    class="mr-2 text-green-600"
+                                    [svgIcon]="
+                                        'heroicons_outline:currency-dollar'
+                                    "
+                                ></mat-icon>
+                                Informations financières
+                            </mat-card-title>
+                        </mat-card-header>
+                        <mat-divider></mat-divider>
+                        <mat-card-content class="space-y-4 p-6">
+                            <div class="space-y-4">
+                                <div class="flex justify-between">
+                                    <span
+                                        class="text-sm font-medium text-gray-500"
+                                        >Montant</span
+                                    >
+                                    <span
+                                        class="text-lg font-semibold text-green-600"
+                                    >
+                                        {{
+                                            transfer()?.amount
+                                                | currency
+                                                    : transfer()?.currency
+                                                    : 'symbol'
+                                                    : '1.2-2'
+                                        }}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span
+                                        class="text-sm font-medium text-gray-500"
+                                        >Frais</span
+                                    >
+                                    <span class="text-sm">
+                                        {{
+                                            transfer()?.fees
+                                                | currency
+                                                    : transfer()?.currency
+                                                    : 'symbol'
+                                                    : '1.2-2'
+                                        }}
+                                    </span>
+                                </div>
+                                <mat-divider></mat-divider>
+                                <div class="flex justify-between">
+                                    <span class="text-base font-medium"
+                                        >Montant total</span
+                                    >
+                                    <span
+                                        class="text-xl font-bold text-primary"
+                                    >
+                                        {{
+                                            transfer()?.totalAmount
+                                                | currency
+                                                    : transfer()?.currency
+                                                    : 'symbol'
+                                                    : '1.2-2'
+                                        }}
+                                    </span>
+                                </div>
+                            </div>
+                        </mat-card-content>
+                    </mat-card>
+
+                    <!-- Transfer Details -->
+                    <mat-card class="lg:col-span-2">
+                        <mat-card-header>
+                            <mat-card-title class="flex items-center">
+                                <mat-icon
+                                    class="mr-2 text-purple-600"
+                                    [svgIcon]="
+                                        'heroicons_outline:arrow-right-circle'
+                                    "
+                                ></mat-icon>
+                                Détails du transfert
+                            </mat-card-title>
+                        </mat-card-header>
+                        <mat-divider></mat-divider>
+                        <mat-card-content class="p-6">
+                            <div class="grid gap-6 lg:grid-cols-2">
+                                <div class="space-y-4">
+                                    <div>
+                                        <label
+                                            class="text-sm font-medium text-gray-500"
+                                            >Compte expéditeur</label
+                                        >
+                                        <p
+                                            class="mt-1 break-all font-mono text-sm"
+                                        >
+                                            {{ transfer()?.fromAccountRib }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="text-sm font-medium text-gray-500"
+                                            >Bénéficiaire</label
+                                        >
+                                        <p class="mt-1 text-base font-medium">
+                                            {{ transfer()?.beneficiaryName }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label
+                                            class="text-sm font-medium text-gray-500"
+                                            >Compte bénéficiaire</label
+                                        >
+                                        <p
+                                            class="mt-1 break-all font-mono text-sm"
+                                        >
+                                            {{ transfer()?.beneficiaryRib }}
+                                        </p>
+                                    </div>
+                                    @if (transfer()?.reason) {
+                                        <div>
+                                            <label
+                                                class="text-sm font-medium text-gray-500"
+                                                >Motif du virement</label
+                                            >
+                                            <p class="mt-1 text-sm">
+                                                {{ transfer()?.reason }}
+                                            </p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </mat-card-content>
+                    </mat-card>
+
+                    <!-- Rejection Information -->
+                    @if (transfer()?.rejectionReason) {
+                        <mat-card class="border-red-200 lg:col-span-2">
+                            <mat-card-header
+                                class="bg-red-50 dark:bg-red-900/20"
+                            >
+                                <mat-card-title
+                                    class="flex items-center text-red-600"
+                                >
+                                    <mat-icon
+                                        class="mr-2"
+                                        [svgIcon]="
+                                            'heroicons_outline:exclamation-triangle'
+                                        "
+                                    ></mat-icon>
+                                    Informations de rejet
+                                </mat-card-title>
+                            </mat-card-header>
+                            <mat-divider></mat-divider>
+                            <mat-card-content class="p-6">
+                                <div>
+                                    <label
+                                        class="text-sm font-medium text-red-600"
+                                        >Raison du rejet</label
+                                    >
+                                    <p
+                                        class="mt-2 text-sm text-red-800 dark:text-red-200"
+                                    >
+                                        {{ transfer()?.rejectionReason }}
+                                    </p>
+                                </div>
+                            </mat-card-content>
+                        </mat-card>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Error State -->
+        @if (!isLoading() && !transfer()) {
+            <div class="flex h-96 items-center justify-center">
+                <div class="text-center">
+                    <mat-icon
+                        class="mx-auto h-12 w-12 text-gray-400"
+                        [svgIcon]="
+                            'heroicons_outline:document-magnifying-glass'
+                        "
+                    ></mat-icon>
+                    <h3
+                        class="mt-4 text-lg font-medium text-gray-900 dark:text-gray-100"
+                    >
+                        Virement introuvable
+                    </h3>
+                    <p class="mt-2 text-sm text-gray-500">
+                        Le virement demandé n'existe pas ou a été supprimé.
+                    </p>
+                    <button
+                        mat-flat-button
+                        color="primary"
+                        class="mt-4"
+                        (click)="goBack()"
+                    >
+                        Retour à la liste
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>

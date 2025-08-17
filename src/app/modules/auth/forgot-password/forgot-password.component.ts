@@ -1,10 +1,17 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import {
+    ChangeDetectionStrategy,
+    Component,
+    OnInit,
+    ViewEncapsulation,
+    inject,
+    signal,
+} from '@angular/core';
+import {
+    AbstractControl,
+    FormBuilder,
+    FormGroup,
     FormsModule,
-    NgForm,
     ReactiveFormsModule,
-    UntypedFormBuilder,
-    UntypedFormGroup,
     Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,9 +22,9 @@ import { RouterLink } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertComponent, FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
-import { finalize } from 'rxjs';
 
 @Component({
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'auth-forgot-password',
     templateUrl: './forgot-password.component.html',
     encapsulation: ViewEncapsulation.None,
@@ -34,22 +41,28 @@ import { finalize } from 'rxjs';
     ],
 })
 export class AuthForgotPasswordComponent implements OnInit {
-    @ViewChild('forgotPasswordNgForm') forgotPasswordNgForm: NgForm;
-
+    // -----------------------------------------------------------------------------------------------------
+    // @ Dependencies
+    // -----------------------------------------------------------------------------------------------------
+    private readonly _authService = inject(AuthService);
+    private readonly _formBuilder = inject(FormBuilder);
+    // -----------------------------------------------------------------------------------------------------
+    // @ Public properties
+    // -----------------------------------------------------------------------------------------------------
     alert: { type: FuseAlertType; message: string } = {
         type: 'success',
         message: '',
     };
-    forgotPasswordForm: UntypedFormGroup;
-    showAlert: boolean = false;
+    forgotPasswordForm: FormGroup;
+    readonly showAlert = signal(false);
 
-    /**
-     * Constructor
-     */
-    constructor(
-        private _authService: AuthService,
-        private _formBuilder: UntypedFormBuilder
-    ) {}
+    // -----------------------------------------------------------------------------------------------------
+    // @ Accessors
+    // -----------------------------------------------------------------------------------------------------
+
+    get emailControl(): AbstractControl {
+        return this.forgotPasswordForm.get('email');
+    }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -73,49 +86,40 @@ export class AuthForgotPasswordComponent implements OnInit {
      * Send the reset link
      */
     sendResetLink(): void {
-        // Return if the form is invalid
         if (this.forgotPasswordForm.invalid) {
             return;
         }
 
-        // Disable the form
         this.forgotPasswordForm.disable();
 
         // Hide the alert
-        this.showAlert = false;
+        this.showAlert.set(false);
 
         // Forgot password
         this._authService
             .forgotPassword(this.forgotPasswordForm.get('email').value)
-            .pipe(
-                finalize(() => {
-                    // Re-enable the form
+            .subscribe({
+                next: () => {
                     this.forgotPasswordForm.enable();
-
-                    // Reset the form
-                    this.forgotPasswordNgForm.resetForm();
-
-                    // Show the alert
-                    this.showAlert = true;
-                })
-            )
-            .subscribe(
-                (response) => {
+                    this.showAlert.set(true);
                     // Set the alert
                     this.alert = {
                         type: 'success',
                         message:
-                            "Password reset sent! You'll receive an email if you are registered on our system.",
+                            'Lien de réinitialisation du mot de passe envoyé avec succès',
                     };
                 },
-                (response) => {
+                error: () => {
+                    this.forgotPasswordForm.enable();
+                    this.forgotPasswordForm.reset();
+                    this.showAlert.set(true);
                     // Set the alert
                     this.alert = {
                         type: 'error',
                         message:
-                            'Email does not found! Are you sure you are already a member?',
+                            "Une erreur est survenue lors de l'envoi du lien de réinitialisation",
                     };
-                }
-            );
+                },
+            });
     }
 }

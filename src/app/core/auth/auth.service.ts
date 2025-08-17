@@ -135,7 +135,7 @@ export class AuthService {
                     // this._userService.user = response.user;
 
                     // Return a new observable with the response
-                    return of(response);
+                    return this.getUser();
                 })
             );
     }
@@ -144,7 +144,6 @@ export class AuthService {
         return this._httpClient.get(`${this.API_URL}/users/me`).pipe(
             switchMap((user: User) => {
                 this._userService.user = user;
-                console.log(user);
                 this._authenticated = true;
                 return of(true);
             }),

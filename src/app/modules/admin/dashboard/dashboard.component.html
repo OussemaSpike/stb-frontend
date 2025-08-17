@@ -1,0 +1,417 @@
+<div class="min-h-screen w-full bg-gray-50 p-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between"
+        >
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    Tableau de Bord Admin
+                </h1>
+                <p class="mt-1 text-gray-600">
+                    Vue d'ensemble des statistiques et performances
+                </p>
+            </div>
+            <div class="mt-4 flex space-x-4 sm:mt-0">
+                <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="refreshData()"
+                    [disabled]="isLoading()"
+                >
+                    <mat-icon>refresh</mat-icon>
+                    Actualiser
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading()) {
+        <div class="flex items-center justify-center py-20">
+            <mat-spinner></mat-spinner>
+        </div>
+    } @else {
+        <!-- Stats Cards -->
+        @if (stats()) {
+            <div
+                class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
+            >
+                <!-- Total Users -->
+                <mat-card class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="mb-1 text-sm text-gray-600">
+                                Utilisateurs Total
+                            </p>
+                            <h3 class="text-2xl font-bold text-gray-900">
+                                {{ stats()!.totalUsers | number }}
+                            </h3>
+                            <p class="mt-1 text-sm">
+                                <span class="text-green-600">
+                                    {{ stats()!.activeUsers | number }} actifs
+                                </span>
+                            </p>
+                        </div>
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100"
+                        >
+                            <mat-icon class="text-blue-600">people</mat-icon>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <mat-progress-bar
+                            mode="determinate"
+                            [value]="userGrowth()"
+                            color="primary"
+                        ></mat-progress-bar>
+                        <p class="mt-1 text-xs text-gray-500">
+                            {{ userGrowth() | number: '1.1-1' }}% d'utilisateurs
+                            actifs
+                        </p>
+                    </div>
+                </mat-card>
+
+                <!-- Total Transfers -->
+                <mat-card class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="mb-1 text-sm text-gray-600">
+                                Virements Total
+                            </p>
+                            <h3 class="text-2xl font-bold text-gray-900">
+                                {{ stats()!.totalTransfers | number }}
+                            </h3>
+                            <div class="mt-1 flex items-center">
+                                <mat-icon
+                                    [class]="getGrowthColor(transferGrowth())"
+                                    class="mr-1 text-sm"
+                                >
+                                    {{ getGrowthIcon(transferGrowth()) }}
+                                </mat-icon>
+                                <span
+                                    [class]="getGrowthColor(transferGrowth())"
+                                    class="text-sm"
+                                >
+                                    {{ transferGrowth() | number: '1.1-1' }}%
+                                </span>
+                            </div>
+                        </div>
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100"
+                        >
+                            <mat-icon class="text-green-600">send</mat-icon>
+                        </div>
+                    </div>
+                </mat-card>
+
+                <!-- Total Amount -->
+                <mat-card class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="mb-1 text-sm text-gray-600">
+                                Montant Total
+                            </p>
+                            <h3 class="text-2xl font-bold text-gray-900">
+                                {{
+                                    stats()!.totalAmountTransferred
+                                        | currency: 'TND' : 'symbol' : '1.0-0'
+                                }}
+                            </h3>
+                            <div class="mt-1 flex items-center">
+                                <mat-icon
+                                    [class]="getGrowthColor(amountGrowth())"
+                                    class="mr-1 text-sm"
+                                >
+                                    {{ getGrowthIcon(amountGrowth()) }}
+                                </mat-icon>
+                                <span
+                                    [class]="getGrowthColor(amountGrowth())"
+                                    class="text-sm"
+                                >
+                                    {{ amountGrowth() | number: '1.1-1' }}%
+                                </span>
+                            </div>
+                        </div>
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-lg bg-yellow-100"
+                        >
+                            <mat-icon class="text-yellow-600"
+                                >account_balance</mat-icon
+                            >
+                        </div>
+                    </div>
+                </mat-card>
+
+                <!-- Today Stats -->
+                <mat-card class="p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="mb-1 text-sm text-gray-600">
+                                Aujourd'hui
+                            </p>
+                            <h3 class="text-2xl font-bold text-gray-900">
+                                {{ stats()!.todayTransfers | number }}
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-600">
+                                {{
+                                    stats()!.todayAmount
+                                        | currency: 'TND' : 'symbol' : '1.0-0'
+                                }}
+                            </p>
+                        </div>
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100"
+                        >
+                            <mat-icon class="text-purple-600">today</mat-icon>
+                        </div>
+                    </div>
+                </mat-card>
+            </div>
+        }
+
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <!-- Transfer Status Distribution -->
+            @if (statusStats().length > 0) {
+                <mat-card class="p-6">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Répartition des Statuts
+                        </h3>
+                        <mat-icon class="text-gray-400">pie_chart</mat-icon>
+                    </div>
+                    <div class="space-y-4">
+                        @for (status of statusStats(); track status.status) {
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <mat-icon
+                                        [class]="getStatusColor(status.status)"
+                                    >
+                                        {{ getStatusIcon(status.status) }}
+                                    </mat-icon>
+                                    <span class="text-sm font-medium">
+                                        {{ status.status }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-sm text-gray-600">
+                                        {{ status.count | number }}
+                                    </span>
+                                    <span class="text-sm font-medium">
+                                        {{
+                                            status.percentage | number: '1.1-1'
+                                        }}%
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </mat-card>
+            }
+
+            <!-- Performance Metrics -->
+            @if (stats()) {
+                <mat-card class="p-6">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Métriques de Performance
+                        </h3>
+                        <mat-icon class="text-gray-400">analytics</mat-icon>
+                    </div>
+                    <div class="space-y-6">
+                        <div>
+                            <div class="mb-2 flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700"
+                                    >Taux d'approbation</span
+                                >
+                                <span
+                                    class="text-sm font-semibold text-green-600"
+                                >
+                                    {{
+                                        stats()!.approvalRate | number: '1.1-1'
+                                    }}%
+                                </span>
+                            </div>
+                            <mat-progress-bar
+                                mode="determinate"
+                                [value]="stats()!.approvalRate"
+                                color="primary"
+                            ></mat-progress-bar>
+                        </div>
+
+                        <div>
+                            <div class="mb-2 flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700"
+                                    >Taux de rejet</span
+                                >
+                                <span
+                                    class="text-sm font-semibold text-red-600"
+                                >
+                                    {{
+                                        stats()!.rejectionRate
+                                            | number: '1.1-1'
+                                    }}%
+                                </span>
+                            </div>
+                            <mat-progress-bar
+                                mode="determinate"
+                                [value]="stats()!.rejectionRate"
+                                color="warn"
+                            ></mat-progress-bar>
+                        </div>
+
+                        <div>
+                            <div class="mb-2 flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700"
+                                    >Taux d'échec</span
+                                >
+                                <span
+                                    class="text-sm font-semibold text-gray-600"
+                                >
+                                    {{
+                                        stats()!.failureRate | number: '1.1-1'
+                                    }}%
+                                </span>
+                            </div>
+                            <mat-progress-bar
+                                mode="determinate"
+                                [value]="stats()!.failureRate"
+                            ></mat-progress-bar>
+                        </div>
+                    </div>
+                </mat-card>
+            }
+        </div>
+
+        <!-- Top Beneficiaries -->
+        @if (topBeneficiaries().length > 0) {
+            <mat-card class="mt-8 p-6">
+                <div class="mb-4 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        Top Bénéficiaires
+                    </h3>
+                    <mat-icon class="text-gray-400">leaderboard</mat-icon>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                                >
+                                    Bénéficiaire
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                                >
+                                    RIB
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                                >
+                                    Virements
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
+                                >
+                                    Montant Total
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            @for (
+                                beneficiary of topBeneficiaries();
+                                track beneficiary.beneficiaryRib;
+                                let i = $index
+                            ) {
+                                <tr class="hover:bg-gray-50">
+                                    <td class="whitespace-nowrap px-4 py-4">
+                                        <div class="flex items-center">
+                                            <div class="h-8 w-8 flex-shrink-0">
+                                                <div
+                                                    class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100"
+                                                >
+                                                    <span
+                                                        class="text-sm font-medium text-indigo-600"
+                                                    >
+                                                        {{ i + 1 }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="ml-3">
+                                                <div
+                                                    class="text-sm font-medium text-gray-900"
+                                                >
+                                                    {{
+                                                        beneficiary.beneficiaryName
+                                                    }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-4 py-4 text-sm text-gray-600"
+                                    >
+                                        {{ beneficiary.beneficiaryRib }}
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-4 py-4 text-sm text-gray-900"
+                                    >
+                                        {{ beneficiary.transferCount | number }}
+                                    </td>
+                                    <td
+                                        class="whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-900"
+                                    >
+                                        {{
+                                            beneficiary.totalAmount
+                                                | currency
+                                                    : 'TND'
+                                                    : 'symbol'
+                                                    : '1.0-0'
+                                        }}
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </mat-card>
+        }
+
+        <!-- Quick Actions -->
+        <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <mat-card class="p-6 text-center">
+                <mat-icon class="mb-3 text-4xl text-blue-600">people</mat-icon>
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">
+                    Gestion des Clients
+                </h3>
+                <p class="mb-4 text-sm text-gray-600">
+                    Gérer les comptes clients et leurs informations
+                </p>
+                <a
+                    mat-raised-button
+                    color="primary"
+                    routerLink="/admin/clients"
+                >
+                    Voir les Clients
+                </a>
+            </mat-card>
+
+            <mat-card class="p-6 text-center">
+                <mat-icon class="mb-3 text-4xl text-green-600">send</mat-icon>
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">
+                    Gestion des Virements
+                </h3>
+                <p class="mb-4 text-sm text-gray-600">
+                    Superviser et approuver les virements
+                </p>
+                <a
+                    mat-raised-button
+                    color="primary"
+                    routerLink="/admin/transfers"
+                >
+                    Voir les Virements
+                </a>
+            </mat-card>
+        </div>
+    }
+</div>

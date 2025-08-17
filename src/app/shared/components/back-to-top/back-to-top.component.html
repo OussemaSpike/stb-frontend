@@ -1,0 +1,13 @@
+@if (isVisible()) {
+    <button
+        mat-fab
+        [color]="color()"
+        class="fixed z-50 shadow-lg transition-all duration-300 ease-in-out hover:scale-110 hover:shadow-xl"
+        [ngClass]="[positionClass(), sizeClass()]"
+        (click)="scrollToTop()"
+        title="Back to top"
+        aria-label="Scroll back to top"
+    >
+        <mat-icon>keyboard_arrow_up</mat-icon>
+    </button>
+}

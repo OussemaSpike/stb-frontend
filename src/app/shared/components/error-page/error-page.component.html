@@ -1,0 +1,26 @@
+<div
+    class="mt-5 flex flex-col items-center justify-center gap-10 font-semibold text-gray-700 dark:text-slate-200"
+>
+    <img
+        class="max-w-128"
+        priority
+        width="120"
+        height="120"
+        alt="error "
+        [ngSrc]="image()"
+    />
+    <div class="flex flex-col items-center gap-3 font-bold">
+        <span class="font-bold">{{ title() }}</span>
+        <span>{{ description() }}</span>
+    </div>
+    @if (showButton()) {
+        <button
+            mat-flat-button
+            type="button"
+            [color]="'primary'"
+            [routerLink]="[redirectRoute()]"
+        >
+            Retour
+        </button>
+    }
+</div>

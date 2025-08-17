@@ -1,0 +1,445 @@
+<div class="flex min-h-screen w-full flex-col bg-gray-50 p-6">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900">
+                    Tableau de bord
+                </h1>
+                <p class="mt-2 text-lg text-gray-600">
+                    Bienvenue, {{ currentUser()?.firstName || 'Client' }}
+                </p>
+            </div>
+            <div class="text-right text-sm text-gray-500">
+                <p>{{ currentDate | date: 'EEEE, d MMMM y' : 'fr-FR' }}</p>
+                <p>{{ currentDate | date: 'HH:mm' : 'fr-FR' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Overview -->
+    @if (currentUser()?.bankAccount) {
+        <div class="mb-8">
+            <h2 class="mb-6 text-2xl font-bold text-gray-900">Mon Compte</h2>
+
+            <!-- Main Balance Card -->
+            <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <!-- Balance Card -->
+                <mat-card
+                    class="bg-gradient-to-br from-blue-600 to-blue-800 p-6 text-white lg:col-span-2"
+                >
+                    @if (accountStatsLoading()) {
+                        <div class="animate-pulse">
+                            <div
+                                class="mb-4 h-8 w-1/2 rounded bg-blue-400"
+                            ></div>
+                            <div
+                                class="mb-2 h-12 w-3/4 rounded bg-blue-400"
+                            ></div>
+                            <div class="h-4 w-1/3 rounded bg-blue-400"></div>
+                        </div>
+                    } @else {
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p
+                                    class="text-sm font-medium uppercase tracking-wide text-blue-100"
+                                >
+                                    Solde Disponible
+                                </p>
+                                <p class="mt-2 text-4xl font-bold">
+                                    {{
+                                        currentUser()?.bankAccount
+                                            ?.availableBalance | number: '1.2-2'
+                                    }}
+                                    <span class="text-xl">{{
+                                        currentUser()?.bankAccount?.currency
+                                    }}</span>
+                                </p>
+                                <p class="mt-1 text-sm text-blue-200">
+                                    Solde total:
+                                    {{
+                                        currentUser()?.bankAccount?.balance
+                                            | number: '1.2-2'
+                                    }}
+                                    {{ currentUser()?.bankAccount?.currency }}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <mat-icon class="text-6xl text-blue-300"
+                                    >account_balance_wallet</mat-icon
+                                >
+                            </div>
+                        </div>
+                    }
+                </mat-card>
+
+                <!-- Account Status Card -->
+                <mat-card class="p-6">
+                    @if (accountStatsLoading()) {
+                        <div class="animate-pulse">
+                            <div
+                                class="mb-4 h-6 w-1/2 rounded bg-gray-300"
+                            ></div>
+                            <div
+                                class="mb-2 h-4 w-3/4 rounded bg-gray-300"
+                            ></div>
+                            <div class="h-4 w-1/2 rounded bg-gray-300"></div>
+                        </div>
+                    } @else {
+                        <div class="mb-4 flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                Statut du Compte
+                            </h3>
+                            <mat-icon
+                                [class]="
+                                    'text-2xl ' +
+                                    (currentUser()?.bankAccount?.status ===
+                                    'ACTIVE'
+                                        ? 'text-green-600'
+                                        : 'text-yellow-600')
+                                "
+                            >
+                                {{
+                                    getAccountStatusIcon(
+                                        currentUser()?.bankAccount?.status!
+                                    )
+                                }}
+                            </mat-icon>
+                        </div>
+                        <mat-chip-set>
+                            <mat-chip
+                                [class]="
+                                    getAccountStatusColor(
+                                        currentUser()?.bankAccount?.status!
+                                    )
+                                "
+                            >
+                                {{
+                                    getAccountStatusText(
+                                        currentUser()?.bankAccount?.status!
+                                    )
+                                }}
+                            </mat-chip>
+                        </mat-chip-set>
+                        <div class="mt-4 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600"
+                                    >Type de compte:</span
+                                >
+                                <span class="font-medium">{{
+                                    getAccountTypeDisplayName(
+                                        currentUser()?.bankAccount?.accountType!
+                                    )
+                                }}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">RIB:</span>
+                                <span class="font-mono text-xs">{{
+                                    formatRib(currentUser()?.bankAccount?.rib!)
+                                }}</span>
+                            </div>
+                        </div>
+                    }
+                </mat-card>
+            </div>
+        </div>
+    }
+
+    <!-- Quick Actions -->
+    <div class="mb-8">
+        <h2 class="mb-6 text-2xl font-bold text-gray-900">Actions Rapides</h2>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <mat-card
+                class="cursor-pointer border-l-4 border-blue-500 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                [routerLink]="['/client/transfers']"
+            >
+                <div class="flex items-center">
+                    <div class="mr-4 rounded-full bg-blue-100 p-3">
+                        <mat-icon class="text-2xl text-blue-600">send</mat-icon>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Nouveau transfert
+                        </h3>
+                        <p class="text-sm text-gray-600">Envoyer de l'argent</p>
+                    </div>
+                </div>
+                <div
+                    class="mt-4 flex items-center text-sm font-medium text-blue-600"
+                >
+                    <span>Commencer</span>
+                    <mat-icon class="ml-1 text-sm">arrow_forward</mat-icon>
+                </div>
+            </mat-card>
+
+            <mat-card
+                class="cursor-pointer border-l-4 border-green-500 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                [routerLink]="['/client/beneficiaries']"
+            >
+                <div class="flex items-center">
+                    <div class="mr-4 rounded-full bg-green-100 p-3">
+                        <mat-icon class="text-2xl text-green-600"
+                            >people</mat-icon
+                        >
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Bénéficiaires
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                            {{ beneficiariesCount() }} bénéficiaires
+                        </p>
+                    </div>
+                </div>
+                <div
+                    class="mt-4 flex items-center text-sm font-medium text-green-600"
+                >
+                    <span>Gérer</span>
+                    <mat-icon class="ml-1 text-sm">arrow_forward</mat-icon>
+                </div>
+            </mat-card>
+
+            <mat-card
+                class="cursor-pointer border-l-4 border-purple-500 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                [routerLink]="['/client/history']"
+            >
+                <div class="flex items-center">
+                    <div class="mr-4 rounded-full bg-purple-100 p-3">
+                        <mat-icon class="text-2xl text-purple-600"
+                            >history</mat-icon
+                        >
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Historique
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                            Voir tous les transferts
+                        </p>
+                    </div>
+                </div>
+                <div
+                    class="mt-4 flex items-center text-sm font-medium text-purple-600"
+                >
+                    <span>Consulter</span>
+                    <mat-icon class="ml-1 text-sm">arrow_forward</mat-icon>
+                </div>
+            </mat-card>
+        </div>
+
+        <!-- Pending Transfers -->
+        @if (pendingTransfers().length > 0) {
+            <div class="mb-8">
+                <h2 class="mb-6 text-2xl font-bold text-gray-900">
+                    Transferts en Attente
+                </h2>
+                <mat-card class="p-6">
+                    <div class="mb-6 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="mr-3 rounded-full bg-yellow-100 p-2">
+                                <mat-icon class="text-xl text-yellow-600"
+                                    >pending</mat-icon
+                                >
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900">
+                                {{ pendingTransfers().length }} transfert(s) en
+                                attente
+                            </h3>
+                        </div>
+                        <button
+                            mat-button
+                            color="primary"
+                            [routerLink]="['/client/history']"
+                        >
+                            Voir tout
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        @for (
+                            transfer of pendingTransfers();
+                            track transfer.id
+                        ) {
+                            <div
+                                class="flex items-center justify-between rounded-lg border border-yellow-200 bg-yellow-50 p-4"
+                            >
+                                <div class="flex items-center">
+                                    <div
+                                        class="mr-4 rounded-full bg-yellow-100 p-2"
+                                    >
+                                        <mat-icon class="text-yellow-600"
+                                            >schedule</mat-icon
+                                        >
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">
+                                            {{ transfer.beneficiaryName }}
+                                        </p>
+                                        <p class="text-sm text-gray-600">
+                                            {{ transfer.reference }} •
+                                            {{
+                                                transfer.createdAt
+                                                    | date: 'dd/MM/yyyy HH:mm'
+                                            }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-bold text-gray-900">
+                                        {{ transfer.amount | number: '1.2-2' }}
+                                        {{ transfer.currency }}
+                                    </p>
+                                    <mat-chip
+                                        class="bg-yellow-100 text-yellow-800"
+                                        >{{
+                                            getStatusText(transfer.status)
+                                        }}</mat-chip
+                                    >
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </mat-card>
+            </div>
+        }
+
+        <!-- Recent Transfers -->
+        <div class="mt-8">
+            <h2 class="mb-6 text-2xl font-bold text-gray-900">
+                Transferts Récents
+            </h2>
+            <mat-card class="p-6">
+                @if (isLoading()) {
+                    <div class="flex items-center justify-center py-12">
+                        <div class="flex flex-col items-center">
+                            <div
+                                class="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"
+                            ></div>
+                            <p class="text-gray-600">
+                                Chargement des transferts...
+                            </p>
+                        </div>
+                    </div>
+                } @else if (recentTransfers().length === 0) {
+                    <div class="py-12 text-center">
+                        <div
+                            class="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 p-4"
+                        >
+                            <mat-icon class="text-5xl text-gray-400"
+                                >receipt_long</mat-icon
+                            >
+                        </div>
+                        <h3 class="mb-2 text-xl font-semibold text-gray-900">
+                            Aucun transfert récent
+                        </h3>
+                        <p class="mb-6 text-gray-600">
+                            Commencez par effectuer votre premier transfert
+                        </p>
+                        <button
+                            mat-raised-button
+                            color="primary"
+                            [routerLink]="['/client/transfers']"
+                            class="px-8"
+                        >
+                            Nouveau Transfert
+                        </button>
+                    </div>
+                } @else {
+                    <div class="space-y-4">
+                        @for (
+                            transfer of recentTransfers();
+                            track transfer.id
+                        ) {
+                            <div
+                                class="flex items-center justify-between rounded-lg border border-gray-200 p-4 transition-colors hover:bg-gray-50"
+                            >
+                                <div class="flex items-center">
+                                    <div
+                                        class="mr-4 rounded-full p-2"
+                                        [class]="
+                                            transfer.status === 'EXECUTED'
+                                                ? 'bg-green-100'
+                                                : transfer.status === 'FAILED'
+                                                  ? 'bg-red-100'
+                                                  : 'bg-blue-100'
+                                        "
+                                    >
+                                        <mat-icon
+                                            [class]="
+                                                transfer.status === 'EXECUTED'
+                                                    ? 'text-green-600'
+                                                    : transfer.status ===
+                                                        'FAILED'
+                                                      ? 'text-red-600'
+                                                      : 'text-blue-600'
+                                            "
+                                        >
+                                            {{
+                                                transfer.status === 'EXECUTED'
+                                                    ? 'check_circle'
+                                                    : transfer.status ===
+                                                        'FAILED'
+                                                      ? 'error'
+                                                      : 'schedule'
+                                            }}
+                                        </mat-icon>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">
+                                            {{ transfer.beneficiaryName }}
+                                        </p>
+                                        <p class="text-sm text-gray-600">
+                                            {{ transfer.reference }} •
+                                            {{
+                                                transfer.createdAt
+                                                    | date: 'dd/MM/yyyy HH:mm'
+                                            }}
+                                        </p>
+                                        @if (transfer.reason) {
+                                            <p
+                                                class="mt-1 text-xs text-gray-500"
+                                            >
+                                                {{ transfer.reason }}
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-bold text-gray-900">
+                                        {{ transfer.amount | number: '1.2-2' }}
+                                        {{ transfer.currency }}
+                                    </p>
+                                    <mat-chip
+                                        [class]="
+                                            getStatusColor(transfer.status)
+                                        "
+                                    >
+                                        {{ getStatusText(transfer.status) }}
+                                    </mat-chip>
+                                    @if (transfer.fees && transfer.fees > 0) {
+                                        <p class="mt-1 text-xs text-gray-500">
+                                            Frais:
+                                            {{
+                                                transfer.fees | number: '1.2-2'
+                                            }}
+                                            {{ transfer.currency }}
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="mt-6 text-center">
+                        <button
+                            mat-button
+                            color="primary"
+                            [routerLink]="['/client/history']"
+                            class="px-8"
+                        >
+                            Voir l'Historique Complet
+                        </button>
+                    </div>
+                }
+            </mat-card>
+        </div>
+    </div>
+</div>

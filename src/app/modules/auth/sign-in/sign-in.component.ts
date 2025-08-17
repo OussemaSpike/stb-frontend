@@ -1,4 +1,10 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+    Component,
+    OnInit,
+    ViewChild,
+    ViewEncapsulation,
+    inject,
+} from '@angular/core';
 import {
     FormsModule,
     NgForm,
@@ -37,6 +43,11 @@ import { AuthService } from 'app/core/auth/auth.service';
     ],
 })
 export class AuthSignInComponent implements OnInit {
+    private _activatedRoute = inject(ActivatedRoute);
+    private _authService = inject(AuthService);
+    private _formBuilder = inject(UntypedFormBuilder);
+    private _router = inject(Router);
+
     @ViewChild('signInNgForm') signInNgForm: NgForm;
 
     alert: { type: FuseAlertType; message: string } = {
@@ -45,16 +56,6 @@ export class AuthSignInComponent implements OnInit {
     };
     signInForm: UntypedFormGroup;
     showAlert: boolean = false;
-
-    /**
-     * Constructor
-     */
-    constructor(
-        private _activatedRoute: ActivatedRoute,
-        private _authService: AuthService,
-        private _formBuilder: UntypedFormBuilder,
-        private _router: Router
-    ) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks
@@ -115,7 +116,7 @@ export class AuthSignInComponent implements OnInit {
                 // Set the alert
                 this.alert = {
                     type: 'error',
-                    message: 'Wrong email or password',
+                    message: 'Email ou mot de passe incorrect',
                 };
 
                 // Show the alert

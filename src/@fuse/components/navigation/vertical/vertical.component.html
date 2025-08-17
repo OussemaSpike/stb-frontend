@@ -22,7 +22,7 @@
         </div>
 
         <!-- Items -->
-        @for (item of navigation; track trackByFn($index, item)) {
+        @for (item of navigation(); track trackByFn($index, item)) {
             <!-- Skip the hidden items -->
             @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
                 <!-- Aside -->
@@ -31,7 +31,7 @@
                         [item]="item"
                         [name]="name"
                         [activeItemId]="activeAsideItemId"
-                        [autoCollapse]="autoCollapse"
+                        [autoCollapse]="autoCollapse()"
                         [skipChildren]="true"
                         (click)="toggleAside(item)"
                     ></fuse-vertical-navigation-aside-item>
@@ -50,7 +50,7 @@
                     <fuse-vertical-navigation-collapsable-item
                         [item]="item"
                         [name]="name"
-                        [autoCollapse]="autoCollapse"
+                        [autoCollapse]="autoCollapse()"
                     ></fuse-vertical-navigation-collapsable-item>
                 }
 
@@ -67,7 +67,7 @@
                     <fuse-vertical-navigation-group-item
                         [item]="item"
                         [name]="name"
-                        [autoCollapse]="autoCollapse"
+                        [autoCollapse]="autoCollapse()"
                     ></fuse-vertical-navigation-group-item>
                 }
 
@@ -104,13 +104,13 @@
             wheelPropagation: false,
             suppressScrollX: true,
         }"
-        [@fadeInLeft]="position === 'left'"
-        [@fadeInRight]="position === 'right'"
-        [@fadeOutLeft]="position === 'left'"
-        [@fadeOutRight]="position === 'right'"
+        [@fadeInLeft]="position() === 'left'"
+        [@fadeInRight]="position() === 'right'"
+        [@fadeOutLeft]="position() === 'left'"
+        [@fadeOutRight]="position() === 'right'"
     >
         <!-- Items -->
-        @for (item of navigation; track trackByFn($index, item)) {
+        @for (item of navigation(); track trackByFn($index, item)) {
             <!-- Skip the hidden items -->
             @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
                 <!-- Aside -->
@@ -118,7 +118,7 @@
                     <fuse-vertical-navigation-aside-item
                         [item]="item"
                         [name]="name"
-                        [autoCollapse]="autoCollapse"
+                        [autoCollapse]="autoCollapse()"
                     ></fuse-vertical-navigation-aside-item>
                 }
             }

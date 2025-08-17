@@ -51,7 +51,7 @@
     </div>
 </div>
 
-@if (!skipChildren) {
+@if (!skipChildren()) {
     <div class="fuse-vertical-navigation-item-children">
         @for (item of item.children; track trackByFn($index, item)) {
             <!-- Skip the hidden items -->
@@ -60,7 +60,7 @@
                 @if (item.type === 'basic') {
                     <fuse-vertical-navigation-basic-item
                         [item]="item"
-                        [name]="name"
+                        [name]="name()"
                     ></fuse-vertical-navigation-basic-item>
                 }
 
@@ -68,8 +68,8 @@
                 @if (item.type === 'collapsable') {
                     <fuse-vertical-navigation-collapsable-item
                         [item]="item"
-                        [name]="name"
-                        [autoCollapse]="autoCollapse"
+                        [name]="name()"
+                        [autoCollapse]="autoCollapse()"
                     ></fuse-vertical-navigation-collapsable-item>
                 }
 
@@ -77,7 +77,7 @@
                 @if (item.type === 'divider') {
                     <fuse-vertical-navigation-divider-item
                         [item]="item"
-                        [name]="name"
+                        [name]="name()"
                     ></fuse-vertical-navigation-divider-item>
                 }
 
@@ -85,7 +85,7 @@
                 @if (item.type === 'group') {
                     <fuse-vertical-navigation-group-item
                         [item]="item"
-                        [name]="name"
+                        [name]="name()"
                     ></fuse-vertical-navigation-group-item>
                 }
 
@@ -93,7 +93,7 @@
                 @if (item.type === 'spacer') {
                     <fuse-vertical-navigation-spacer-item
                         [item]="item"
-                        [name]="name"
+                        [name]="name()"
                     ></fuse-vertical-navigation-spacer-item>
                 }
             }

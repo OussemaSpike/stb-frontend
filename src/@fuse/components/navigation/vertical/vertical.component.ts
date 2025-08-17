@@ -8,26 +8,27 @@ import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion';
 import { ScrollStrategy, ScrollStrategyOptions } from '@angular/cdk/overlay';
 import { DOCUMENT } from '@angular/common';
 import {
-    AfterViewInit,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    ElementRef,
-    EventEmitter,
-    HostBinding,
-    HostListener,
-    inject,
-    Input,
-    OnChanges,
-    OnDestroy,
-    OnInit,
-    Output,
-    QueryList,
-    Renderer2,
-    SimpleChanges,
-    ViewChild,
-    ViewChildren,
-    ViewEncapsulation,
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  HostListener,
+  inject,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  QueryList,
+  Renderer2,
+  SimpleChanges,
+  ViewChild,
+  ViewChildren,
+  ViewEncapsulation,
+  input
 } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
@@ -93,14 +94,14 @@ export class FuseVerticalNavigationComponent
     private _fuseNavigationService = inject(FuseNavigationService);
     private _fuseUtilsService = inject(FuseUtilsService);
 
-    @Input() appearance: FuseVerticalNavigationAppearance = 'default';
-    @Input() autoCollapse: boolean = true;
+    readonly appearance = input<FuseVerticalNavigationAppearance>('default');
+    readonly autoCollapse = input<boolean>(true);
     @Input() inner: boolean = false;
-    @Input() mode: FuseVerticalNavigationMode = 'side';
+    readonly mode = input<FuseVerticalNavigationMode>('side');
     @Input() name: string = this._fuseUtilsService.randomId();
-    @Input() navigation: FuseNavigationItem[];
+    readonly navigation = input<FuseNavigationItem[]>(undefined);
     @Input() opened: boolean = true;
-    @Input() position: FuseVerticalNavigationPosition = 'left';
+    readonly position = input<FuseVerticalNavigationPosition>('left');
     @Input() transparentOverlay: boolean = false;
     @Output()
     readonly appearanceChanged: EventEmitter<FuseVerticalNavigationAppearance> =
@@ -158,15 +159,15 @@ export class FuseVerticalNavigationComponent
         return {
             'fuse-vertical-navigation-animations-enabled':
                 this._animationsEnabled,
-            [`fuse-vertical-navigation-appearance-${this.appearance}`]: true,
+            [`fuse-vertical-navigation-appearance-${this.appearance()}`]: true,
             'fuse-vertical-navigation-hover': this._hovered,
             'fuse-vertical-navigation-inner': this.inner,
-            'fuse-vertical-navigation-mode-over': this.mode === 'over',
-            'fuse-vertical-navigation-mode-side': this.mode === 'side',
+            'fuse-vertical-navigation-mode-over': this.mode() === 'over',
+            'fuse-vertical-navigation-mode-side': this.mode() === 'side',
             'fuse-vertical-navigation-opened': this.opened,
-            'fuse-vertical-navigation-position-left': this.position === 'left',
+            'fuse-vertical-navigation-position-left': this.position() === 'left',
             'fuse-vertical-navigation-position-right':
-                this.position === 'right',
+                this.position() === 'right',
         };
         /* eslint-enable @typescript-eslint/naming-convention */
     }
@@ -356,13 +357,14 @@ export class FuseVerticalNavigationComponent
             )
             .subscribe(() => {
                 // If the mode is 'over' and the navigation is opened...
-                if (this.mode === 'over' && this.opened) {
+                const mode = this.mode();
+                if (mode === 'over' && this.opened) {
                     // Close the navigation
                     this.close();
                 }
 
                 // If the mode is 'side' and the aside is active...
-                if (this.mode === 'side' && this.activeAsideItemId) {
+                if (mode === 'side' && this.activeAsideItemId) {
                     // Close the aside
                     this.closeAside();
                 }
@@ -816,7 +818,7 @@ export class FuseVerticalNavigationComponent
 
         // If the navigation opened, and the mode
         // is 'over', show the overlay
-        if (this.mode === 'over') {
+        if (this.mode() === 'over') {
             if (this.opened) {
                 this._showOverlay();
             } else {

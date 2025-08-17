@@ -1,5 +1,5 @@
 import { I18nPluralPipe } from '@angular/common';
-import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from 'app/core/auth/auth.service';
 import { Subject, finalize, takeUntil, takeWhile, tap, timer } from 'rxjs';
@@ -11,20 +11,15 @@ import { Subject, finalize, takeUntil, takeWhile, tap, timer } from 'rxjs';
     imports: [RouterLink, I18nPluralPipe],
 })
 export class AuthSignOutComponent implements OnInit, OnDestroy {
+    private _authService = inject(AuthService);
+    private _router = inject(Router);
+
     countdown: number = 5;
     countdownMapping: any = {
         '=1': '# second',
         other: '# seconds',
     };
     private _unsubscribeAll: Subject<any> = new Subject<any>();
-
-    /**
-     * Constructor
-     */
-    constructor(
-        private _authService: AuthService,
-        private _router: Router
-    ) {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Lifecycle hooks

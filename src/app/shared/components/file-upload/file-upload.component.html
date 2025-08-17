@@ -1,0 +1,158 @@
+<!-- File Drop Zone -->
+@if (!file) {
+    <div
+        class="w-full rounded-lg border-2 border-dashed border-gray-300 p-3 text-center"
+        [ngClass]="{
+            'border-blue-500 bg-blue-100': isFileDragged(),
+        }"
+        (dragover)="onDragOver($event)"
+        (drop)="onDrop($event)"
+        (dragleave)="onDragLeave($event)"
+    >
+        <input
+            #fileInput
+            title="fileInput"
+            type="file"
+            class="hidden"
+            [accept]="accept()"
+            (change)="onFileSelected($event)"
+        />
+        <button
+            type="button"
+            class="h-full w-full"
+            (click)="onUploadButtonClick()"
+        >
+            <mat-icon class="icon-size-8" svgIcon="feather:upload"></mat-icon>
+
+            @switch (type()) {
+                @case ('file') {
+                    <p class="text-gray-500">Sélectionner un fichier</p>
+                }
+                @case ('csv') {
+                    <p class="text-gray-500">Sélectionner un fichier CSV</p>
+                }
+                @case ('image') {
+                    <p class="text-gray-500">Sélectionner une image</p>
+                }
+                @default {
+                    <p class="text-gray-500">Sélectionner un fichier</p>
+                }
+            }
+            <p class="text-gray-500">ou glisser-déposer ici</p>
+        </button>
+    </div>
+    <p class="text-md mt-2 text-gray-400">
+        * Taille maximale du fichier: {{ maxFileSize() | fileSize }}
+    </p>
+}
+
+<!-- File preview -->
+@if (file) {
+    @if (type() === 'file' || type() === 'csv') {
+        <div
+            class="flex items-center justify-between rounded-md border-2 p-4 sm:p-5"
+        >
+            <div class="flex items-center justify-start">
+                <!-- Icons -->
+                <div class="relative mr-2">
+                    <mat-icon
+                        class="text-hint icon-size-10 opacity-50"
+                        [svgIcon]="'heroicons_solid:document'"
+                    />
+                    <div
+                        class="absolute bottom-0 left-0 rounded px-1.5 text-sm font-semibold leading-5 text-white"
+                        [class]="getFileTypeClassName(file.name)"
+                    >
+                        {{ getShortType(file.name) }}
+                    </div>
+                </div>
+                <div>
+                    <p class="text-sm sm:text-base">
+                        @if (hasUrl()) {
+                            <a
+                                class="cursor-pointer"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                [href]="data().document.url"
+                            >
+                                {{ file.name }}
+                            </a>
+                        } @else {
+                            {{ file.name }}
+                        }
+                    </p>
+                    <p class="text-xs text-gray-500 sm:text-sm">
+                        {{ convertBytes(file.size) }}
+                    </p>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-slate-200 sm:h-10 sm:w-10"
+                (click)="removeFile()"
+            >
+                <mat-icon class="icon-size-4" svgIcon="feather:trash" />
+            </button>
+        </div>
+    } @else {
+        <div
+            class="flex items-center justify-center rounded-md border-2 p-4 sm:p-5"
+        >
+            <div
+                class="relative sm:grid-cols-4"
+                [ngClass]="{
+                    'h-40 w-40': previewLayout() === 'circle',
+                    'h-[50%] w-[70%]': previewLayout() === 'rectangle',
+                }"
+            >
+                <div
+                    class="flex overflow-hidden border-2 border-white"
+                    [ngClass]="{
+                        'rounded-full': previewLayout() === 'circle',
+                        'rounded-lg': previewLayout() === 'rectangle',
+                    }"
+                >
+                    @if (data()?.profilePicture) {
+                        <img
+                            priority
+                            alt="avatar"
+                            class="mx-auto h-40 w-40 object-cover"
+                            width="30"
+                            height="30"
+                            [src]="
+                                data()?.profilePicture ||
+                                'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+                            "
+                        />
+                    } @else {
+                        <img
+                            priority
+                            alt="avatar"
+                            class="mx-auto aspect-auto object-cover"
+                            width="auto"
+                            height="auto"
+                            [src]="
+                                file
+                                    ? createObjectURL(file)
+                                    : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'
+                            "
+                        />
+                    }
+                </div>
+
+                <button
+                    title="Upload"
+                    color="primary"
+                    type="button"
+                    alt="upload profile pic"
+                    mat-mini-fab
+                    class="absolute bottom-0 left-0 z-40 rounded-full bg-red-500"
+                    (click)="removeFile()"
+                >
+                    <mat-icon class="icon-size-4" svgIcon="feather:trash" />
+                </button>
+            </div>
+        </div>
+    }
+}
